@@ -1,0 +1,21 @@
+{
+  "title": "python programming",
+  "scenes": [
+    {
+      "id": "PY002_S1",
+      "narration": "In Python, variables are like named containers that hold data. Let's imagine a variable named 'score' holding the value 100.",
+      "visual": "The text 'score = 100' appears on screen, representing a variable assignment."
+    },
+    {
+      "id": "PY002_S2",
+      "narration": "We can easily change the value a variable holds. Here, 'score' is updated to 150, demonstrating that variables are mutable.",
+      "visual": "The value of the 'score' variable changes from 100 to 150."
+    },
+    {
+      "id": "PY002_S3",
+      "narration": "Python supports various data types. For example, 'age' is an integer, 'name' is a string, and 'is_active' is a boolean. Each type has specific properties and uses.",
+      "visual": "Examples of integer, string, and boolean variables with their respective values and type labels are shown."
+    }
+  ],
+  "manim_code": "from manim import *\n\nclass GeneratedScene(Scene):\n    def construct(self):\n        # Scene 1: Introduce variable assignment\n        var_name = Text(\"score\", font_size=48, color=BLUE)\n        assign_op = Text(\"=\", font_size=48, color=WHITE)\n        value_1 = Text(\"100\", font_size=48, color=YELLOW)\n\n        initial_assignment = VGroup(var_name, assign_op, value_1).arrange(RIGHT, buff=0.5)\n        explanation_1 = Text(\"score = 100 (Integer)\", font_size=30).to_edge(DOWN)\n\n        self.play(Write(var_name))\n        self.play(Write(assign_op))\n        self.play(Write(value_1))\n        self.play(Write(explanation_1))\n        self.wait(1.5)\n\n        # Scene 2: Re-assign variable\n        value_2 = Text(\"150\", font_size=48, color=YELLOW).move_to(value_1.get_center())\n        explanation_2 = Text(\"score = 150 (Variable Reassignment)\", font_size=30).to_edge(DOWN)\n\n        self.play(Transform(value_1, value_2))\n        self.play(Transform(explanation_1, explanation_2))\n        self.wait(1.5)\n\n        # Scene 3: Show different data types\n        self.play(FadeOut(initial_assignment, explanation_1))\n\n        # Integer example\n        int_var_text = Text(\"age = 30\", font_size=40, color=BLUE).shift(UP * 1.5 + LEFT * 1.5)\n        int_type_label = Text(\"Integer\", font_size=28, color=YELLOW).next_to(int_var_text, RIGHT, buff=0.5)\n        int_group = VGroup(int_var_text, int_type_label)\n\n        # String example\n        str_var_text = Text('name = \"Alice\"', font_size=40, color=BLUE).shift(LEFT * 1.5)\n        str_type_label = Text(\"String\", font_size=28, color=YELLOW).next_to(str_var_text, RIGHT, buff=0.5)\n        str_group = VGroup(str_var_text, str_type_label)\n\n        # Boolean example\n        bool_var_text = Text(\"is_active = True\", font_size=40, color=BLUE).shift(DOWN * 1.5 + LEFT * 1.5)\n        bool_type_label = Text(\"Boolean\", font_size=28, color=YELLOW).next_to(bool_var_text, RIGHT, buff=0.5)\n        bool_group = VGroup(bool_var_text, bool_type_label)\n\n        explanation_3 = Text(\"Python supports various data types.\", font_size=30).to_edge(DOWN)\n\n        self.play(Write(int_group))\n        self.wait(0.5)\n        self.play(Write(str_group))\n        self.wait(0.5)\n        self.play(Write(bool_group))\n        self.wait(0.5)\n        self.play(Write(explanation_3))\n        self.wait(2)\n"
+}

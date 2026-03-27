@@ -1,0 +1,21 @@
+{
+  "title": "Quantum Measurement and State Collapse",
+  "scenes": [
+    {
+      "type": "text",
+      "narration": "Quantum measurement is an active process, not passive observation, fundamentally altering the system. Before measurement, quantum systems exist in a superposition of multiple states simultaneously."
+    },
+    {
+      "type": "diagram_process_threads",
+      "narration": "Watch a qubit, represented on a Bloch sphere, existing as a blend of |0⟩ and |1⟩ states. When a measurement interaction occurs, its state instantly collapses to either the definite |0⟩ (north pole) or |1⟩ (south pole)."
+    },
+    {
+      "type": "diagram_process_threads",
+      "narration": "Observe multiple identical qubits, each in the same superposition, being measured one after another. Each measurement yields a definite but probabilistic outcome (|0⟩ or |1⟩), demonstrating the Born Rule and the irreversible nature of state collapse."
+    },
+    {
+      "type": "text",
+      "narration": "Quantum measurement is an active, irreversible process that forces a system from a probabilistic superposition into a single, definite classical state, fundamentally altering its reality and providing the final classical bit for quantum computations."
+    }
+  ]
+}

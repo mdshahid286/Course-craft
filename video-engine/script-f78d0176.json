@@ -1,0 +1,21 @@
+{
+  "title": "Quantum Computing Basics: Classical vs. Quantum Paradigm",
+  "scenes": [
+    {
+      "type": "text",
+      "narration": "This animation introduces the fundamental difference between classical bits, which are either 0 or 1, and quantum qubits, which can exist in a superposition of both states simultaneously."
+    },
+    {
+      "type": "diagram_process_threads",
+      "narration": "Observe a classical bit represented by a light switch, clearly ON or OFF. Contrast this with a spinning coin illustrating a qubit in superposition, existing as both heads and tails until measured."
+    },
+    {
+      "type": "diagram_process_threads",
+      "narration": "Watch as two qubits become entangled, demonstrating how their fates are linked; a change in one qubit's state instantly influences the other, regardless of distance."
+    },
+    {
+      "type": "text",
+      "narration": "In summary, quantum computing leverages superposition and entanglement to explore vast computational spaces, offering a powerful new paradigm for solving complex problems beyond classical capabilities."
+    }
+  ]
+}

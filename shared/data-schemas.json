@@ -1,0 +1,16 @@
+{
+  "course": {
+    "title": "string",
+    "description": "string",
+    "lessons": []
+  },
+  "lesson": {
+    "title": "string",
+    "content": "string",
+    "quiz": {}
+  },
+  "quiz": {
+    "questions": []
+  }
+}
+

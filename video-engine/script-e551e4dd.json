@@ -1,0 +1,21 @@
+{
+  "title": "Quantum Entanglement: Spooky Action at a Distance",
+  "scenes": [
+    {
+      "type": "text",
+      "narration": "This animation introduces quantum entanglement, a fundamental phenomenon where two or more particles become inextricably linked, forming a single, unified quantum system."
+    },
+    {
+      "type": "diagram_process_threads",
+      "narration": "Watch as two entangled particles, represented by spinning spheres, move apart from a central source, connected by a shimmering link. When one sphere's state is measured and collapses (e.g., to 'spin up'), the distant partner instantly and simultaneously collapses to its complementary state (e.g., 'spin down'), demonstrating their interconnectedness."
+    },
+    {
+      "type": "text",
+      "narration": "This instantaneous correlation, dubbed 'spooky action at a distance' by Einstein, challenges classical intuition. While their states collapse instantly, no information can be transmitted faster than light."
+    },
+    {
+      "type": "text",
+      "narration": "Quantum entanglement is not just a curiosity; it's a critical resource. It underpins quantum computing, enabling powerful new ways to process information, and is vital for secure quantum communication technologies."
+    }
+  ]
+}

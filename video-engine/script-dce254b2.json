@@ -1,0 +1,21 @@
+{
+  "title": "Quantum Computing Basics",
+  "scenes": [
+    {
+      "type": "text",
+      "narration": "This scene introduces how classical physics accurately described the macroscopic world, but completely broke down when attempting to explain phenomena at the atomic and subatomic scales, necessitating a new understanding."
+    },
+    {
+      "type": "graph_derivative",
+      "narration": "Here, a graph illustrates the 'ultraviolet catastrophe,' comparing classical physics' faulty prediction of infinite energy at high frequencies for black-body radiation with the experimentally observed curve, which quantum theory correctly explains."
+    },
+    {
+      "type": "graph_derivative",
+      "narration": "This animation uses a graph to demonstrate the photoelectric effect, showing that electrons are ejected from a metal only when incident light reaches a specific frequency threshold, regardless of its intensity, revealing light's particle-like nature."
+    },
+    {
+      "type": "text",
+      "narration": "This concluding scene emphasizes that quantum mechanics, with its revolutionary concepts, provided the essential framework needed to understand the microscopic universe where classical physics proved inadequate, paving the way for modern technology."
+    }
+  ]
+}

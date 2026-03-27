@@ -1,0 +1,21 @@
+{
+  "title": "Quantum Computing Basics: The No-Cloning Theorem",
+  "scenes": [
+    {
+      "type": "text",
+      "narration": "This animation introduces the No-Cloning Theorem, a fundamental principle in quantum mechanics stating that it's impossible to create an identical copy of an arbitrary unknown quantum state."
+    },
+    {
+      "type": "diagram_process_threads",
+      "narration": "Observe a hypothetical 'quantum copier' machine. A single quantum state enters, but instead of producing two identical copies, the process fails, illustrating that perfect replication is forbidden by quantum mechanics."
+    },
+    {
+      "type": "diagram_process_threads",
+      "narration": "See how the No-Cloning Theorem secures quantum key distribution. An eavesdropper attempting to intercept and copy a quantum key inevitably disturbs the original state, alerting the legitimate communicating parties to their presence."
+    },
+    {
+      "type": "text",
+      "narration": "The No-Cloning Theorem highlights a profound distinction between classical and quantum information, establishing unique limitations and enabling new paradigms for secure communication and quantum computing."
+    }
+  ]
+}

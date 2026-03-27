@@ -1,0 +1,21 @@
+{
+  "title": "Single-Qubit Gates: The Building Blocks of Quantum Manipulation",
+  "scenes": [
+    {
+      "type": "text",
+      "narration": "This scene introduces single-qubit gates as fundamental operations in quantum computing, highlighting their role in transforming qubits and creating quantum phenomena like superposition and phase shifts."
+    },
+    {
+      "type": "diagram_process_threads",
+      "narration": "This animation shows the effect of Pauli-X, Y, and Z gates on a qubit's state, illustrating how they perform rotations around the X, Y, and Z axes on the Bloch Sphere, flipping states or introducing phase changes."
+    },
+    {
+      "type": "diagram_process_threads",
+      "narration": "Witness the Hadamard gate transforming a qubit into an equal superposition of states, and then observe how Phase gates introduce precise phase shifts, essential for complex quantum algorithms."
+    },
+    {
+      "type": "text",
+      "narration": "This final scene summarizes that single-qubit gates are the foundational tools for manipulating quantum information, enabling transformations, superposition, and phase control, crucial for quantum computation."
+    }
+  ]
+}
