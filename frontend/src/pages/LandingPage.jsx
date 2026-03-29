@@ -1,254 +1,383 @@
-import React, { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React from 'react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { 
-  Rocket, Sparkles, Video, BookOpen, Layers, 
-  Zap, ArrowRight, PlayCircle, Code, ChevronRight, CheckCircle2,
-  Cpu, Terminal, Globe, Shield, Activity
+import {
+  BookOpen, Sparkles, Video, Layers, Zap,
+  ArrowRight, CheckCircle, Users, Star,
+  FileText, PlayCircle, Brain
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
+const FEATURES = [
+  {
+    icon: Sparkles,
+    title: 'AI Course Generation',
+    desc: 'Enter any topic and get a fully structured course with modules, lessons, and objectives in under 30 seconds.',
+    color: 'bg-brand-green-lighter text-brand-green',
+  },
+  {
+    icon: Video,
+    title: 'Manim Animations',
+    desc: 'Automatically generate cinematic math visualizations and explainer animations for any concept.',
+    color: 'bg-blue-50 text-accent-blue',
+  },
+  {
+    icon: Brain,
+    title: 'Smart Quizzes',
+    desc: 'AI-generated interactive quizzes with adaptive difficulty to reinforce learning at every step.',
+    color: 'bg-purple-50 text-accent-purple',
+  },
+  {
+    icon: Layers,
+    title: 'Structured Curriculum',
+    desc: 'Pedagogically sound syllabi with clear learning outcomes, organized into modules and lessons.',
+    color: 'bg-amber-50 text-accent-amber',
+  },
+  {
+    icon: FileText,
+    title: 'YouTube Resources',
+    desc: 'Curated video recommendations automatically matched to each lesson topic and difficulty level.',
+    color: 'bg-rose-50 text-rose-600',
+  },
+  {
+    icon: Users,
+    title: 'Community Learning',
+    desc: 'Share courses, discuss topics, and collaborate with thousands of learners and educators.',
+    color: 'bg-green-50 text-brand-green',
+  },
+];
+
+const TESTIMONIALS = [
+  { name: 'Sarah Chen', role: 'ML Engineer', rating: 5, text: 'CourseCraft generated a complete deep learning curriculum in seconds. The Manim animations are incredibly clear.', avatar: 'SC' },
+  { name: 'Prof. David Kim', role: 'Mathematics Professor', rating: 5, text: 'I use it for all my calculus courses now. The AI understands pedagogy — it structures content exactly as I would.', avatar: 'DK' },
+  { name: 'Alex Rivera', role: 'Self-taught Developer', rating: 5, text: 'Went from zero to building projects after following a CourseCraft course on system design. Absolutely brilliant.', avatar: 'AR' },
+];
+
+const STATS = [
+  { value: '500k+', label: 'Courses Generated' },
+  { value: '12k+', label: 'Active Learners' },
+  { value: '4.9 / 5', label: 'Average Rating' },
+  { value: '< 30s', label: 'Generation Time' },
+];
+
 export default function LandingPage() {
-  const containerRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"]
-  });
-
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const mockupScale = useTransform(scrollYProgress, [0, 0.3], [0.9, 1]);
-  const mockupRotateX = useTransform(scrollYProgress, [0, 0.3], [10, 0]);
-
   return (
-    <div ref={containerRef} className="relative min-h-screen bg-background font-sans selection:bg-brand-blue/40 selection:text-white overflow-hidden text-foreground">
-      
-      {/* Space Background Layer */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-brand-blue/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[120px]" />
-        
-        {/* Animated Grid */}
-        <div className="absolute inset-0 bg-grid-white opacity-[0.03] [mask-image:radial-gradient(ellipse_at_center,black,transparent_80%)]" />
-      </div>
+    <div className="min-h-screen bg-app-bg font-sans text-app-fg">
 
-      {/* Navbar - Techy & Glassy */}
-      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/40 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.5)]">
-               <Rocket size={20} className="text-white fill-white/20" />
+      {/* ── Navbar ── */}
+      <nav className="sticky top-0 z-50 bg-app-surface/80 backdrop-blur-xl border-b border-app-border">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-brand-green rounded-xl flex items-center justify-center shadow-brand">
+              <BookOpen size={16} className="text-white" />
             </div>
-            <span className="text-2xl font-display font-black tracking-tighter text-white uppercase italic">
-              Orbit<span className="text-brand-blue font-bold not-italic">Engine</span>
-            </span>
+            <span className="text-lg font-display font-bold text-app-fg">CourseCraft</span>
           </div>
-          <div className="flex items-center gap-6">
-            <Link to="/login" className="text-sm font-bold text-zinc-400 hover:text-white transition-colors uppercase tracking-widest hidden md:block">
-              Auth_Gateway
+
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-app-muted">
+            {['Features', 'Solutions', 'Resources', 'Pricing'].map(item => (
+              <a key={item} href="#" className="hover:text-app-fg transition-colors">{item}</a>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link to="/login" className="text-sm font-semibold text-app-fg hover:text-brand-green transition-colors">
+              Sign in
             </Link>
-            <Link to="/login" className="text-[13px] font-black bg-brand-blue text-white px-8 py-3 rounded-xl hover:shadow-[0_0_25px_rgba(59,130,246,0.6)] transition-all flex items-center gap-2 uppercase tracking-tighter group italic">
-              Initialize System <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            <Link to="/login" className="btn-brand text-sm">
+              Get started <ArrowRight size={15} />
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative pt-44 pb-32 md:pt-60 overflow-hidden">
-        <motion.div style={{ y: heroY }} className="max-w-6xl mx-auto px-6 text-center relative z-10">
-          
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-2 px-6 py-2 rounded-full border border-brand-blue/20 bg-brand-blue/5 text-brand-blue text-xs font-black uppercase tracking-[0.2em] mb-12 backdrop-blur-md"
-          >
-            <Cpu size={14} className="animate-pulse" /> AI Rendering Cluster: ACTIVE
-          </motion.div>
-          
-          <motion.h1 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-6xl md:text-8xl lg:text-[7rem] font-display font-black tracking-tighter text-white mb-10 leading-[0.9] uppercase italic"
-          >
-            Teach at the <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-blue via-indigo-400 to-cyan-400 drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-              Speed of Light.
-            </span>
-          </motion.h1>
+      {/* ── Hero ── */}
+      <section className="relative pt-24 pb-20 px-6 text-center overflow-hidden">
+        {/* Dot pattern */}
+        <div className="absolute inset-0 dot-pattern opacity-60 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-app-bg pointer-events-none" />
 
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-lg md:text-2xl text-zinc-400 font-medium max-w-3xl mx-auto mb-16 leading-relaxed font-mono"
-          >
-            {"> "}The first AI-native course builder for the space-age. Generate syllabi, cinematic Manim animations, and interactive labs in seconds.
-          </motion.p>
-
-          <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <Link to="/login" className="w-full sm:w-auto px-12 py-5 bg-white text-black font-black rounded-2xl text-xl shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] transition-all flex items-center justify-center gap-3 group hover:scale-105 italic uppercase">
-              Start Building <Terminal size={20} />
-            </Link>
-            <button className="w-full sm:w-auto px-10 py-5 bg-transparent border border-white/10 text-white font-black rounded-2xl text-xl hover:bg-white/5 transition-all flex items-center justify-center gap-3 group italic uppercase">
-              <PlayCircle size={22} className="text-brand-blue" /> System Overview
-            </button>
-          </motion.div>
+        {/* Floating widgets */}
+        <motion.div
+          animate={{ y: [0, -10, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute left-[5%] top-24 hidden xl:block"
+        >
+          <div className="bg-app-surface border border-app-border rounded-2xl p-4 shadow-modal w-56">
+            <p className="text-xs font-semibold text-app-muted mb-2">Today's progress</p>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs">
+                <div className="w-2 h-2 rounded-full bg-brand-green" />
+                <span className="text-app-fg font-medium truncate">Neural Networks</span>
+                <span className="ml-auto text-app-muted">60%</span>
+              </div>
+              <div className="progress-track">
+                <div className="progress-fill w-3/5" />
+              </div>
+            </div>
+          </div>
         </motion.div>
 
-        {/* Cinematic Mockup */}
-        <div className="w-full mt-32 px-6 relative z-10">
-          <motion.div 
-            style={{ 
-              scale: mockupScale,
-              rotateX: mockupRotateX,
-              perspective: "2000px"
-            }}
-            className="max-w-6xl mx-auto rounded-3xl border border-white/10 bg-black/40 backdrop-blur-3xl shadow-[0_40px_100px_rgba(0,0,0,0.8)] overflow-hidden"
-          >
-            <div className="h-10 bg-zinc-900 flex items-center px-6 gap-2 border-b border-white/5">
-               <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-               <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-               <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-               <div className="ml-auto flex items-center gap-4">
-                  <span className="text-[10px] font-mono text-zinc-500 uppercase">Status: Core_Operational</span>
-               </div>
+        <motion.div
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 4, delay: 0.5, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute right-[5%] top-20 hidden xl:block"
+        >
+          <div className="bg-app-surface border border-app-border rounded-2xl p-4 shadow-modal w-52">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center">
+                <Zap size={12} className="text-white" />
+              </div>
+              <span className="text-xs font-semibold text-app-fg">Course generated!</span>
             </div>
-            
-            <div className="p-8 md:p-16 h-[500px] flex items-center justify-center relative bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
-                <div className="absolute inset-0 bg-brand-blue/5 pointer-events-none" />
-                
-                {/* Floating Tech Widgets */}
-                <div className="relative w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-10">
-                   <motion.div 
-                     animate={{ y: [0, -10, 0] }}
-                     transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                     className="bg-black/80 border border-brand-blue/30 p-8 rounded-3xl shadow-[0_0_30px_rgba(59,130,246,0.1)] relative group overflow-hidden"
-                   >
-                     <div className="absolute top-0 right-0 p-4 opacity-20"><Activity size={40} className="text-brand-blue" /></div>
-                     <h4 className="text-brand-blue font-mono font-bold text-sm mb-4">LOG_GENERATION_SEQUENCE</h4>
-                     <div className="space-y-4 font-mono text-xs">
-                        <p className="text-zinc-500">{"> "}Building semantic architecture...</p>
-                        <p className="text-emerald-400">{"> "}Course outline projected.</p>
-                        <p className="text-zinc-500">{"> "}Initializing Manim render cluster...</p>
-                        <p className="text-brand-blue font-bold flex items-center gap-2">Generating Module_01 [#######---] 72%</p>
-                     </div>
-                   </motion.div>
+            <p className="text-xs text-app-muted">Quantum Computing · 5 modules · 28s</p>
+          </div>
+        </motion.div>
 
-                   <motion.div 
-                     animate={{ y: [0, 10, 0] }}
-                     transition={{ duration: 4, delay: 0.5, repeat: Infinity, ease: "easeInOut" }}
-                     className="bg-black/80 border border-indigo-500/30 p-8 rounded-3xl shadow-[0_0_30px_rgba(99,102,241,0.1)]"
-                   >
-                     <h4 className="text-indigo-400 font-mono font-bold text-sm mb-6 uppercase flex items-center justify-between">
-                        Neural_Network_Syllabus
-                        <Shield size={16} />
-                     </h4>
-                     <div className="space-y-4">
-                        <div className="h-2 bg-zinc-800 rounded-full w-full" />
-                        <div className="h-2 bg-zinc-800 rounded-full w-3/4" />
-                        <div className="h-2 bg-zinc-800 rounded-full w-4/5" />
-                        <div className="grid grid-cols-3 gap-2 mt-8">
-                           <div className="h-20 bg-indigo-500/10 rounded-xl border border-indigo-500/20" />
-                           <div className="h-20 bg-indigo-500/10 rounded-xl border border-indigo-500/20" />
-                           <div className="h-20 bg-indigo-500/10 rounded-xl border border-indigo-500/20" />
-                        </div>
-                     </div>
-                   </motion.div>
-                </div>
-            </div>
+        <div className="relative max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-green-lighter border border-brand-green/20 text-brand-green text-xs font-semibold mb-8"
+          >
+            <Sparkles size={12} /> AI-Powered Learning Platform
           </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-5xl md:text-6xl lg:text-7xl font-display font-bold text-app-fg leading-[1.1] tracking-tight mb-6"
+          >
+            Build courses that<br />
+            <span className="text-brand-green">actually teach.</span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-lg md:text-xl text-app-muted max-w-2xl mx-auto mb-10 leading-relaxed"
+          >
+            Enter any topic and our AI generates a complete, structured course with lessons, animations, quizzes, and curated resources — in seconds.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-3"
+          >
+            <Link to="/login" className="btn-brand text-base px-8 py-3.5 shadow-brand-lg">
+              Start building for free <ArrowRight size={17} />
+            </Link>
+            <button className="btn-outline text-base px-6 py-3.5 gap-2">
+              <PlayCircle size={17} className="text-brand-green" /> Watch demo
+            </button>
+          </motion.div>
+
+          <p className="text-xs text-app-muted mt-5">No credit card required · Free forever plan available</p>
+        </div>
+
+        {/* Mock dashboard preview */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.7 }}
+          className="relative max-w-5xl mx-auto mt-16"
+        >
+          <div className="bg-app-surface border border-app-border rounded-2xl shadow-modal overflow-hidden">
+            <div className="h-9 bg-app-surface2 border-b border-app-border flex items-center px-4 gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-rose-400" />
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+              <div className="w-2.5 h-2.5 rounded-full bg-brand-green-light" />
+              <div className="ml-4 flex-1 max-w-xs bg-app-border rounded-md h-4 text-[10px] flex items-center px-2 text-app-muted font-mono">
+                coursecraft.ai/dashboard
+              </div>
+            </div>
+            <div className="grid grid-cols-4 h-72 text-left">
+              <div className="border-r border-app-border p-4 space-y-1 bg-app-surface">
+                {['Dashboard', 'My Courses', 'Build Course', 'Analytics'].map((item, i) => (
+                  <div key={item} className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium ${i === 0 ? 'bg-brand-green-lighter text-brand-green' : 'text-app-muted'}`}>
+                    <div className={`w-3 h-3 rounded-sm ${i === 0 ? 'bg-brand-green' : 'bg-app-border'}`} />
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <div className="col-span-3 p-5 bg-app-bg">
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  {[
+                    { label: 'Total Courses', val: '24', color: 'bg-brand-green text-white' },
+                    { label: 'In Progress', val: '12', color: 'bg-app-surface border border-app-border' },
+                    { label: 'Completed', val: '10', color: 'bg-app-surface border border-app-border' },
+                  ].map(s => (
+                    <div key={s.label} className={cn(s.color, 'rounded-xl p-3')}>
+                      <p className={cn('text-lg font-bold', s.color.includes('brand-green') ? 'text-white' : 'text-app-fg')}>{s.val}</p>
+                      <p className={cn('text-[10px]', s.color.includes('brand-green') ? 'text-white/70' : 'text-app-muted')}>{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-app-surface border border-app-border rounded-xl p-4">
+                  <p className="text-xs font-semibold text-app-fg mb-3">Recent Courses</p>
+                  <div className="space-y-2">
+                    {['Quantum Computing Basics', 'Neural Networks & Deep Learning', 'Advanced Calculus III'].map((c, i) => (
+                      <div key={c} className="flex items-center gap-3">
+                        <div className={cn('w-6 h-6 rounded-lg flex-shrink-0', ['bg-brand-green', 'bg-accent-blue', 'bg-accent-purple'][i])} />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium text-app-fg truncate">{c}</div>
+                          <div className="progress-track mt-1 max-w-[100px]">
+                            <div className="progress-fill" style={{ width: `${[75, 45, 20][i]}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ── Stats bar ── */}
+      <section className="border-y border-app-border bg-app-surface py-10 px-6">
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          {STATS.map(stat => (
+            <div key={stat.label}>
+              <p className="text-3xl font-display font-bold text-app-fg mb-1">{stat.value}</p>
+              <p className="text-sm text-app-muted">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Feature Bento Grid - Space Themed */}
-      <section className="py-40 px-6 relative z-10">
+      {/* ── Features ── */}
+      <section className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8">
-            <motion.div className="md:col-span-2 tech-card group">
-               <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:opacity-40 transition-opacity duration-700">
-                  <Globe size={180} className="text-brand-blue" />
-               </div>
-               <div className="relative z-10 h-full flex flex-col">
-                  <div className="w-14 h-14 bg-brand-blue/10 border border-brand-blue/20 rounded-2xl flex items-center justify-center mb-8">
-                     <Video size={28} className="text-brand-blue" />
-                  </div>
-                  <h3 className="text-4xl font-display font-black text-white italic mb-6">Manim Engine V2</h3>
-                  <p className="text-zinc-400 text-xl font-medium max-w-md leading-relaxed">
-                     Hardware-accelerated educational rendering. Turn abstract concepts into cinematic motion graphics with a single command.
-                  </p>
-                  <div className="mt-auto pt-10 flex gap-4 overflow-hidden">
-                     {['#Vector_Math', '#Fluid_Dynamics', '#Neural_Flow'].map(t => (
-                       <span key={t} className="px-4 py-2 border border-white/5 bg-white/5 rounded-lg text-[10px] font-mono text-zinc-500">{t}</span>
-                     ))}
-                  </div>
-               </div>
-            </motion.div>
+          <div className="text-center mb-16">
+            <span className="badge-green text-xs mb-4">Everything you need</span>
+            <h2 className="text-4xl font-display font-bold text-app-fg mb-4">
+              One platform, complete learning pipeline
+            </h2>
+            <p className="text-lg text-app-muted max-w-2xl mx-auto">
+              From topic to complete course in seconds. CourseCraft handles the entire educational content pipeline automatically.
+            </p>
+          </div>
 
-            <motion.div className="tech-card flex flex-col justify-between">
-               <div className="w-12 h-12 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center">
-                  <Layers size={24} className="text-indigo-400" />
-               </div>
-               <div>
-                  <h4 className="text-2xl font-bold mb-4 uppercase tracking-tighter italic">Deep_Syllabus</h4>
-                  <p className="text-zinc-500 text-sm leading-relaxed">
-                     Pedagogically sound curricula architected by 2.0-grade reasoning models. Every lesson objective is targeted and measurable.
-                  </p>
-               </div>
-            </motion.div>
-
-            <motion.div className="tech-card flex flex-col justify-between">
-               <div className="w-12 h-12 bg-cyan-500/10 border border-cyan-500/20 rounded-xl flex items-center justify-center">
-                  <PlayCircle size={24} className="text-cyan-400" />
-               </div>
-               <div>
-                  <h4 className="text-2xl font-bold mb-4 uppercase tracking-tighter italic">Instant_Playback</h4>
-                  <p className="text-zinc-500 text-sm leading-relaxed">
-                     Stream AI generated content instantly. No more months of post-production. The curriculum evolves as you build it.
-                  </p>
-               </div>
-            </motion.div>
-
-            <motion.div className="md:col-span-2 tech-card bg-brand-blue group overflow-hidden">
-               <div className="absolute inset-0 bg-black/60 backdrop-blur-3xl group-hover:bg-black/50 transition-colors" />
-               <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
-                  <div className="flex-1">
-                     <h3 className="text-4xl font-display font-black text-white uppercase italic mb-6 leading-tight tracking-tighter">Connect with the <br /> creator_cluster</h3>
-                     <p className="text-blue-100/60 font-medium mb-8">Join David Kim, Sarah Chen, and 12k+ other system architects building the next generation of courses.</p>
-                     <button className="bg-white text-black font-black px-10 py-4 rounded-2xl italic uppercase group flex items-center gap-3">
-                        Enter_Hall <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                     </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {FEATURES.map((f, i) => {
+              const Icon = f.icon;
+              return (
+                <motion.div
+                  key={f.title}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.08 }}
+                  className="card-hover p-6"
+                >
+                  <div className={cn('w-11 h-11 rounded-xl flex items-center justify-center mb-4', f.color)}>
+                    <Icon size={20} />
                   </div>
-                  <div className="hidden md:flex gap-4">
-                     {[1,2,3].map(i => (
-                        <div key={i} className="w-20 h-20 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center">
-                           <Globe size={40} className="text-white/20" />
-                        </div>
-                     ))}
-                  </div>
-               </div>
-            </motion.div>
+                  <h3 className="text-base font-semibold text-app-fg mb-2">{f.title}</h3>
+                  <p className="text-sm text-app-muted leading-relaxed">{f.desc}</p>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Footer - Techy */}
-      <footer className="py-20 px-6 border-t border-white/5 bg-black relative z-10">
-         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-10">
-            <div className="flex items-center gap-4">
-               <div className="w-8 h-8 bg-zinc-800 rounded-lg flex items-center justify-center">
-                  <Rocket size={16} className="text-brand-blue" />
-               </div>
-               <span className="font-display font-black tracking-tighter uppercase italic text-xl">OrbitEngine</span>
+      {/* ── Testimonials ── */}
+      <section className="py-24 px-6 bg-app-surface border-y border-app-border">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-display font-bold text-app-fg mb-4">
+              Loved by learners worldwide
+            </h2>
+            <div className="flex justify-center gap-1 mb-2">
+              {[1,2,3,4,5].map(i => <Star key={i} size={20} className="text-amber-400 fill-amber-400" />)}
             </div>
-            <div className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest text-center">
-               © 2026 Space_Logic_Systems // All units operational
-            </div>
-            <div className="flex gap-8 font-mono text-[11px] text-zinc-400 uppercase">
-               <a href="#" className="hover:text-brand-blue transition-colors tracking-tighter underline underline-offset-4 decoration-brand-blue/30">Manifesto_01</a>
-               <a href="#" className="hover:text-brand-blue transition-colors tracking-tighter underline underline-offset-4 decoration-brand-blue/30">Protocol_Docs</a>
-            </div>
-         </div>
-      </footer>
+            <p className="text-app-muted text-sm">4.9 / 5 average from 2,000+ reviews</p>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {TESTIMONIALS.map((t, i) => (
+              <motion.div
+                key={t.name}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="card p-6"
+              >
+                <div className="flex gap-1 mb-4">
+                  {[1,2,3,4,5].map(s => <Star key={s} size={14} className="text-amber-400 fill-amber-400" />)}
+                </div>
+                <p className="text-sm text-app-muted leading-relaxed mb-5">"{t.text}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-brand-green flex items-center justify-center text-white text-xs font-bold">
+                    {t.avatar}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-app-fg">{t.name}</p>
+                    <p className="text-xs text-app-muted">{t.role}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section className="py-24 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="bg-brand-green rounded-3xl p-12 md:p-16 relative overflow-hidden">
+            <div className="absolute inset-0 dot-pattern opacity-10" />
+            <div className="absolute top-0 right-0 w-56 h-56 bg-white/5 rounded-full blur-3xl" />
+            <div className="relative z-10">
+              <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-4 leading-tight">
+                Start building better courses today
+              </h2>
+              <p className="text-brand-green-muted text-lg mb-8 max-w-xl mx-auto font-medium">
+                Join 12,000+ educators and learners using CourseCraft to create world-class learning experiences.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link to="/login" className="bg-white text-brand-green font-semibold px-8 py-3.5 rounded-xl hover:bg-brand-green-lighter transition-colors flex items-center gap-2 justify-center shadow-modal">
+                  Get started free <ArrowRight size={16} />
+                </Link>
+                <button className="border border-white/20 text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-white/10 transition-colors">
+                  See pricing →
+                </button>
+              </div>
+              <div className="flex items-center justify-center gap-5 mt-8 text-sm text-brand-green-muted font-medium">
+                <span className="flex items-center gap-1.5"><CheckCircle size={14} /> Free forever plan</span>
+                <span className="flex items-center gap-1.5"><CheckCircle size={14} /> No credit card needed</span>
+                <span className="flex items-center gap-1.5"><CheckCircle size={14} /> Cancel anytime</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer className="border-t border-app-border py-10 px-6 bg-app-surface">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 bg-brand-green rounded-lg flex items-center justify-center">
+              <BookOpen size={14} className="text-white" />
+            </div>
+            <span className="text-base font-display font-bold text-app-fg">CourseCraft</span>
+          </div>
+          <p className="text-sm text-app-muted">© {new Date().getFullYear()} CourseCraft AI. All rights reserved.</p>
+          <div className="flex gap-6 text-sm text-app-muted font-medium">
+            {['Privacy', 'Terms', 'Docs', 'Support'].map(l => (
+              <a key={l} href="#" className="hover:text-app-fg transition-colors">{l}</a>
+            ))}
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

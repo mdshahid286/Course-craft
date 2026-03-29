@@ -1,24 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  Play, Search, Laptop, BookOpen, PenTool, BookMarked, 
-  ArrowRight, Video, FileText, Code, Layers, Sparkles, 
-  Loader, Activity, Cpu, Rocket, Terminal, Target,
-  ChevronRight, ArrowUpRight
+import {
+  Plus, ArrowUpRight, BookOpen, Target, Zap,
+  Clock, TrendingUp, Sparkles, ChevronRight,
+  Rocket, BarChart2, CheckCircle, Loader
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { listUserCourses } from '../services/api';
 import { cn } from '../lib/utils';
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
-};
+const WEEK_BARS = [
+  { day: 'S', h: 35 },
+  { day: 'M', h: 65 },
+  { day: 'T', h: 48 },
+  { day: 'W', h: 90, active: true },
+  { day: 'T', h: 72, active: true },
+  { day: 'F', h: 55 },
+  { day: 'S', h: 28 },
+];
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
+const FADE_UP = {
+  hidden: { opacity: 0, y: 14 },
+  show: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.35, delay: i * 0.07 } }),
 };
 
 export default function DashboardPage() {
@@ -26,256 +30,366 @@ export default function DashboardPage() {
   const { currentUser } = useAuth();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTopic, setSearchTopic] = useState('');
+  const [topic, setTopic] = useState('');
 
   useEffect(() => {
-    async function fetchRecent() {
+    async function fetch() {
       if (!currentUser) return;
       try {
         const all = await listUserCourses(currentUser.uid);
-        // Sort and limit
         setCourses(all.slice(0, 3));
-      } catch (err) {
-        console.error('Failed to fetch recent courses', err);
+      } catch (e) {
+        console.error(e);
       } finally {
         setLoading(false);
       }
     }
-    fetchRecent();
+    fetch();
   }, [currentUser]);
 
-  const handleQuickCreate = (e) => {
+  const handleCreate = (e) => {
     e.preventDefault();
-    if (searchTopic.trim()) {
-      navigate('/build', { state: { initialQuery: searchTopic } });
-    } else {
-      navigate('/build');
-    }
+    navigate('/build', topic.trim() ? { state: { initialQuery: topic } } : {});
   };
 
+  const firstName = currentUser?.displayName?.split(' ')[0] || 'there';
+
+  const STATS = [
+    {
+      label: 'Total Courses',
+      value: courses.length,
+      icon: BookOpen,
+      accent: 'bg-brand-green text-white',
+      note: 'In your library',
+      primary: true,
+    },
+    {
+      label: 'Completed',
+      value: courses.filter(c => c.progress === 100).length,
+      icon: CheckCircle,
+      accent: 'bg-app-surface2',
+      note: 'Finished courses',
+    },
+    {
+      label: 'In Progress',
+      value: courses.filter(c => c.progress > 0 && c.progress < 100).length,
+      icon: Zap,
+      accent: 'bg-app-surface2',
+      note: 'Keep going!',
+    },
+    {
+      label: 'Study Streak',
+      value: '7 Days',
+      icon: TrendingUp,
+      accent: 'bg-app-surface2',
+      note: 'Personal best',
+    },
+  ];
+
   return (
-    <div className="px-6 md:px-10 pb-12 w-full max-w-[1400px] mx-auto flex flex-col gap-10 font-sans">
-      
-      {/* Space Hero Section / OS Interface Header */}
-      <motion.section 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative bg-black border border-white/10 rounded-[2.5rem] p-10 md:p-14 shadow-[0_20px_50px_rgba(0,0,0,0.4)] overflow-hidden group"
-      >
-        <div className="absolute inset-0 z-0 pointer-events-none opacity-40 hover:opacity-100 transition-opacity duration-1000">
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-blue/10 rounded-full blur-[120px]" />
-           <div className="absolute inset-0 bg-grid-white opacity-[0.03]" />
-        </div>
+    <div className="p-6 lg:p-8 max-w-[1400px] mx-auto space-y-8">
 
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
-          <div className="flex-1 max-w-2xl">
-            <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] mb-8">
-               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> SYSTEM_OS_READY_0X42
-            </div>
-            
-            <h2 className="text-4xl md:text-5xl lg:text-7xl font-display font-black text-white mb-6 leading-[0.9] tracking-tighter uppercase italic">
-              Project <span className="text-brand-blue drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]">Knowledge_Core</span>
-            </h2>
-            
-            <p className="text-zinc-500 text-lg md:text-xl mb-12 font-mono max-w-lg leading-relaxed">
-              {"> "}Enter your query to initialize high-fidelity curriculum generation. 
-            </p>
-            
-            <form onSubmit={handleQuickCreate} className="flex flex-col sm:flex-row items-stretch gap-4">
-              <div className="flex-1 flex items-center bg-zinc-900/80 backdrop-blur-md border border-white/10 p-2 pl-6 rounded-2xl focus-within:border-brand-blue/50 transition-all group/input">
-                <Sparkles size={20} className="text-zinc-600 group-focus-within/input:text-brand-blue transition-colors mr-3" />
-                <input 
-                  type="text" 
-                  value={searchTopic}
-                  onChange={(e) => setSearchTopic(e.target.value)}
-                  placeholder="Query (e.g. Asymmetric Cryptography)..." 
-                  className="flex-1 bg-transparent border-none outline-none text-[15px] text-white font-mono placeholder-zinc-700"
-                />
-              </div>
-              <button type="submit" className="bg-white hover:bg-zinc-100 text-black font-black py-4 px-10 rounded-2xl flex items-center justify-center gap-3 transition-all hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] uppercase italic">
-                Initiate <ArrowRight size={20} className="group-hover:translate-x-1" />
-              </button>
-            </form>
-          </div>
-          
-          <div className="hidden lg:block relative perspective-1000 group">
-             <div className="w-80 h-96 bg-zinc-900 border border-white/10 rounded-[3rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] transform -rotate-6 rotate-y-6 group-hover:rotate-0 transition-all duration-700 flex flex-col gap-8 relative overflow-hidden">
-                 <div className="absolute inset-0 bg-brand-blue/5 pointer-events-none" />
-                 <div className="flex justify-between items-center">
-                    <div className="w-14 h-14 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl flex items-center justify-center text-indigo-400"><BookMarked size={24}/></div>
-                    <Cpu size={24} className="text-zinc-700 animate-orbit" />
-                 </div>
-                 <div className="space-y-4">
-                    <div className="h-2.5 bg-zinc-800 rounded-full w-full" />
-                    <div className="h-2.5 bg-zinc-800 rounded-full w-3/4" />
-                    <div className="h-2 bg-zinc-800/50 rounded-full w-4/5" />
-                 </div>
-                 <div className="mt-auto p-4 bg-black/40 border border-white/5 rounded-2xl flex items-center gap-4">
-                    <div className="w-8 h-8 rounded-full bg-brand-blue group-hover:scale-110 transition-transform" />
-                    <div className="h-2 bg-zinc-800 rounded-full w-full" />
-                 </div>
-             </div>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* Main OS Body */}
-      <motion.section 
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8"
+      {/* ── Page header ── */}
+      <motion.div
+        initial="hidden" animate="show" variants={FADE_UP} custom={0}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
-        <div className="md:col-span-3 lg:col-span-4 flex justify-between items-end mb-2 px-2">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-2xl font-display font-black text-white italic tracking-tighter uppercase underline decoration-brand-blue/30 underline-offset-8">Unit_Manifest</h3>
-            <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-[0.3em]">Projected Registry // Sorted by Access_Time</span>
-          </div>
-          <Link to="/courses" className="text-zinc-500 font-mono font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 hover:text-white transition-colors border border-white/5 px-4 py-2 rounded-lg bg-white/5">
-            ALL_RESOURCES <ArrowUpRight size={14} />
+        <div>
+          <h1 className="text-2xl font-display font-bold text-app-fg">
+            Dashboard
+          </h1>
+          <p className="text-sm text-app-muted mt-0.5">
+            Welcome back, {firstName} 👋 — plan, build and track your courses.
+          </p>
+        </div>
+        <div className="flex gap-2.5">
+          <Link to="/build" className="btn-brand text-sm">
+            <Plus size={16} /> Add Course
+          </Link>
+          <Link to="/courses" className="btn-outline text-sm">
+            Import Data
           </Link>
         </div>
+      </motion.div>
 
-        {loading ? (
-          <div className="md:col-span-4 flex items-center justify-center p-32 bg-zinc-900/20 border border-white/5 rounded-[2.5rem] border-dashed">
-            <Loader size={32} className="text-brand-blue animate-spin" />
-          </div>
-        ) : courses.length === 0 ? (
-          <div className="md:col-span-4 flex flex-col items-center justify-center p-20 bg-zinc-900/20 border border-white/5 rounded-[2.5rem] border-dashed text-center">
-            <Terminal size={40} className="text-zinc-800 mb-6" />
-            <p className="text-zinc-500 font-mono mb-8 italic uppercase tracking-widest text-sm">Registry is empty. No systems detected.</p>
-            <Link to="/build" className="text-brand-blue font-black hover:underline uppercase tracking-tighter flex items-center gap-2">Initialize First_Unit <Rocket size={16}/></Link>
-          </div>
-        ) : (
-          courses.map((course, idx) => (
-            <motion.div key={course.id} variants={itemVariants} className="h-full">
-              <Link to={`/course/${course.id}`} className="tech-card h-full group flex flex-col p-8 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-40 transition-opacity"><Terminal size={32} /></div>
-                
-                <div className={cn(
-                  "mb-6 w-14 h-14 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform relative z-10",
-                  idx % 2 === 0 ? 'bg-brand-blue/10 border border-brand-blue/20 text-brand-blue' : 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-400'
+      {/* ── Stats row ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {STATS.map((stat, i) => {
+          const Icon = stat.icon;
+          return (
+            <motion.div
+              key={stat.label}
+              initial="hidden" animate="show" variants={FADE_UP} custom={i + 1}
+              className={cn(
+                'stat-card relative overflow-hidden',
+                stat.primary && 'bg-brand-green text-white border-brand-green'
+              )}
+            >
+              <div className="flex items-start justify-between mb-4">
+                <p className={cn('text-sm font-medium', stat.primary ? 'text-white/80' : 'text-app-muted')}>
+                  {stat.label}
+                </p>
+                <button className={cn(
+                  'w-7 h-7 rounded-full border flex items-center justify-center transition-colors',
+                  stat.primary
+                    ? 'border-white/20 text-white/70 hover:bg-white/10'
+                    : 'border-app-border text-app-muted hover:bg-app-surface2'
                 )}>
-                  {idx % 2 === 0 ? <Code size={24} strokeWidth={2.5}/> : <Laptop size={24} strokeWidth={2.5}/>}
-                </div>
-                
-                <h4 className="font-display font-black text-2xl text-white mb-6 leading-tight tracking-tighter uppercase italic group-hover:text-brand-blue transition-colors">
-                  {course.title || course.topic || 'System_Untitled'}
-                </h4>
-                
-                <div className="space-y-4 mb-8 mt-auto">
-                   <div className="flex justify-between items-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
-                      <span>Sync_Status</span>
-                      <span className={cn(idx % 2 === 0 ? 'text-brand-blue' : 'text-indigo-400')}>{course.progress || 0}%</span>
-                   </div>
-                   <div className="h-1 bg-zinc-900 rounded-full overflow-hidden border border-white/5">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: `${course.progress || 0}%` }}
-                        className={cn("h-full rounded-full transition-all", idx % 2 === 0 ? 'bg-brand-blue' : 'bg-indigo-400')}
-                      />
-                   </div>
-                </div>
-                
-                <div className="flex justify-between items-center pt-6 border-t border-white/5">
-                  <span className="text-[10px] font-mono font-bold text-zinc-600 uppercase tracking-widest flex items-center gap-2">
-                    <Layers size={14}/> {course.modules?.length || 0} SECTORS
-                  </span>
-                  <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 group-hover:bg-brand-blue group-hover:text-white flex items-center justify-center transition-all group-hover:shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-                    <Play size={14} fill="currentColor" className="ml-0.5" />
-                  </div>
-                </div>
-              </Link>
+                  <ArrowUpRight size={13} />
+                </button>
+              </div>
+              <p className={cn('text-3xl font-display font-bold mb-1', stat.primary ? 'text-white' : 'text-app-fg')}>
+                {stat.value}
+              </p>
+              <p className={cn('text-xs', stat.primary ? 'text-brand-green-muted' : 'text-app-muted')}>
+                {stat.primary && <span className="inline-flex items-center gap-1 text-green-300 font-medium mr-1">↑ Active</span>}
+                {stat.note}
+              </p>
             </motion.div>
-          ))
-        )}
+          );
+        })}
+      </div>
 
-        {/* Global Progress Hub */}
-        <motion.div variants={itemVariants} className="md:col-span-2 lg:col-span-2 tech-card flex flex-col min-h-[300px] relative">
-          <div className="absolute top-0 right-0 p-8 opacity-5"><Activity size={120} /></div>
-          
-          <div className="flex justify-between items-start mb-10 relative z-10">
+      {/* ── Middle row ─ Analytics + Quick Create ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* Project Analytics chart */}
+        <motion.div
+          initial="hidden" animate="show" variants={FADE_UP} custom={5}
+          className="lg:col-span-2 card p-6"
+        >
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-2xl font-display font-black text-white italic tracking-tighter uppercase mb-1">Telemetry_Feed</h3>
-              <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-widest">Unit activity analysis // Last 168 Hours</p>
+              <h2 className="text-base font-semibold text-app-fg">Study Analytics</h2>
+              <p className="text-xs text-app-muted mt-0.5">Weekly learning hours</p>
             </div>
-            <div className="bg-brand-blue/10 border border-brand-blue/20 text-brand-blue px-3 py-1 rounded-lg text-[10px] font-mono font-bold tracking-widest uppercase">
-              +1.2k_XP
+            <div className="flex gap-1.5 p-1 bg-app-surface2 border border-app-border rounded-xl">
+              {['Week', 'Month', 'Year'].map(t => (
+                <button key={t} className={cn(
+                  'text-xs font-medium px-3 py-1.5 rounded-lg transition-all',
+                  t === 'Week' ? 'bg-app-surface shadow-card text-app-fg' : 'text-app-muted hover:text-app-fg'
+                )}>
+                  {t}
+                </button>
+              ))}
             </div>
           </div>
-          
-          <div className="flex-1 flex items-end justify-between px-2 pt-10 h-[120px] relative z-10">
-            {[
-              { label: 'MN', h: '40%', active: false },
-              { label: 'TU', h: '70%', active: false },
-              { label: 'WD', h: '50%', active: true },
-              { label: 'TH', h: '95%', active: true },
-              { label: 'FR', h: '60%', active: false },
-              { label: 'SA', h: '30%', active: false },
-              { label: 'SU', h: '45%', active: false },
-            ].map(bar => (
-              <div key={bar.label} className="w-10 flex flex-col items-center gap-3 group/bar cursor-pointer">
-                <div 
-                  className={cn(
-                    "w-full rounded-t-xl relative transition-all duration-500 group-hover/bar:bg-brand-blue group-hover/bar:shadow-[0_0_15px_rgba(59,130,246,0.5)]",
-                    bar.active ? 'bg-brand-blue bg-opacity-80' : 'bg-zinc-800'
-                  )}
-                  style={{ height: bar.h }}
-                >
-                   {bar.active && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-white rounded-full animate-ping" />}
+
+          {/* Bar chart */}
+          <div className="flex items-end justify-between gap-3 h-36 px-2">
+            {WEEK_BARS.map((bar, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
+                <div className="w-full flex flex-col justify-end" style={{ height: '100%' }}>
+                  <motion.div
+                    initial={{ height: 0 }}
+                    animate={{ height: `${bar.h}%` }}
+                    transition={{ duration: 0.6, delay: i * 0.06, ease: 'backOut' }}
+                    className={cn(
+                      'w-full rounded-t-lg transition-all group-hover:opacity-80',
+                      bar.active
+                        ? 'bg-brand-green shadow-brand'
+                        : 'bg-gray-100 group-hover:bg-brand-green/20',
+                      'relative overflow-hidden'
+                    )}
+                  >
+                    {bar.active && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-brand-green-dark/20 to-transparent" />
+                    )}
+                    {/* Striped pattern for inactive */}
+                    {!bar.active && (
+                      <div
+                        className="absolute inset-0 opacity-30"
+                        style={{
+                          backgroundImage: 'repeating-linear-gradient(45deg, #9CA3AF 0, #9CA3AF 1px, transparent 0, transparent 50%)',
+                          backgroundSize: '6px 6px'
+                        }}
+                      />
+                    )}
+                  </motion.div>
                 </div>
-                <span className="text-[9px] font-mono font-black text-zinc-600 group-hover/bar:text-white transition-colors uppercase tracking-tighter">{bar.label}</span>
+                <span className="text-xs text-app-muted font-medium">{bar.day}</span>
               </div>
             ))}
           </div>
         </motion.div>
 
-        {/* System Intelligence Box */}
-        <motion.div variants={itemVariants} className="md:col-span-3 lg:col-span-4 tech-card bg-gradient-to-r from-zinc-900 to-black p-10 flex flex-col md:flex-row items-center gap-12 mt-4 relative overflow-hidden group">
-          <div className="absolute right-0 bottom-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none group-hover:bg-indigo-500/20 transition-all duration-1000" />
-          
-          <div className="flex-1">
-            <h3 className="text-3xl font-display font-black text-white italic tracking-tighter uppercase mb-6 flex items-center gap-4">
-               <Cpu size={32} className="text-indigo-400" /> System_Optimization
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                { icon: <Rocket size={18} />, label: 'Neural Flow', status: 'Optimal', col: 'text-brand-blue' },
-                { icon: <Target size={18} />, label: 'Objective Sync', status: 'Synced', col: 'text-emerald-400' },
-                { icon: <Activity size={18} />, label: 'Latency', status: '12ms', col: 'text-amber-400' },
-                { icon: <Terminal size={18} />, label: 'Shell', status: 'Native', col: 'text-zinc-400' },
-              ].map((stat) => (
-                <div key={stat.label} className="bg-black/50 border border-white/5 p-5 rounded-2xl group/stat hover:border-white/10 transition-colors">
-                  <div className={cn("mb-3", stat.col)}>{stat.icon}</div>
-                  <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-1">{stat.label}</p>
-                  <p className="text-white font-black text-sm uppercase tracking-tighter italic">{stat.status}</p>
-                </div>
+        {/* Quick Create Panel */}
+        <motion.div
+          initial="hidden" animate="show" variants={FADE_UP} custom={6}
+          className="card p-6 flex flex-col"
+        >
+          <div className="flex items-center gap-2 mb-1">
+            <Sparkles size={16} className="text-brand-green" />
+            <h2 className="text-base font-semibold text-app-fg">AI Course Builder</h2>
+          </div>
+          <p className="text-xs text-app-muted mb-5">Enter a topic and we'll generate a full course with lessons, quizzes, and videos.</p>
+
+          <form onSubmit={handleCreate} className="flex-1 flex flex-col gap-3">
+            <input
+              type="text"
+              value={topic}
+              onChange={e => setTopic(e.target.value)}
+              placeholder="e.g. Quantum Computing Basics"
+              className="input text-sm"
+            />
+            <button type="submit" className="btn-brand justify-center w-full text-sm">
+              <Rocket size={15} /> Generate Course
+            </button>
+          </form>
+
+          {/* Suggestions */}
+          <div className="mt-5 pt-5 border-t border-app-border">
+            <p className="text-xs text-app-muted mb-2 font-medium">Trending topics</p>
+            <div className="flex flex-wrap gap-1.5">
+              {['Machine Learning', 'Web3', 'Python', 'Calculus'].map(s => (
+                <button
+                  key={s}
+                  onClick={() => setTopic(s)}
+                  className="badge bg-app-surface2 border border-app-border text-app-muted hover:bg-brand-green-lighter hover:text-brand-green hover:border-brand-green/20 transition-all text-[11px] font-medium px-2.5 py-1 rounded-lg cursor-pointer"
+                >
+                  {s}
+                </button>
               ))}
             </div>
           </div>
         </motion.div>
-      </motion.section>
+      </div>
 
-      {/* Footer System Broadcaster */}
-      <motion.section 
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="bg-brand-blue text-white rounded-[2.5rem] p-12 flex flex-col md:flex-row items-center justify-between shadow-[0_40px_100px_rgba(59,130,246,0.2)] relative overflow-hidden group"
-      >
-         <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
-         <div className="absolute right-[-10%] top-[-10%] w-[40%] h-[40%] bg-white/10 rounded-full blur-[100px]" />
+      {/* ── Bottom row ─ Recent courses + Progress ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-         <div className="relative z-10 text-center md:text-left mb-10 md:mb-0 max-w-xl">
-           <h2 className="text-4xl md:text-5xl font-display font-black mb-4 uppercase italic tracking-tighter leading-none">Access the <br /> Protocol_Docs_</h2>
-           <p className="text-blue-100/70 font-mono text-xs uppercase tracking-widest leading-relaxed">Integrated deployment instructions for system architects and developers.</p>
-         </div>
-         
-         <button className="relative z-10 bg-white hover:bg-zinc-100 text-black font-black py-5 px-10 rounded-2xl transition-all shadow-xl uppercase italic text-sm tracking-tighter flex items-center gap-3">
-           Secure_Entry <Terminal size={18} />
-         </button>
-      </motion.section>
+        {/* Recent courses */}
+        <motion.div
+          initial="hidden" animate="show" variants={FADE_UP} custom={7}
+          className="lg:col-span-2 card overflow-hidden"
+        >
+          <div className="flex items-center justify-between p-6 border-b border-app-border">
+            <h2 className="text-base font-semibold text-app-fg">Recent Courses</h2>
+            <Link to="/courses" className="btn-ghost text-xs gap-1">
+              View All <ChevronRight size={14} />
+            </Link>
+          </div>
 
+          {loading ? (
+            <div className="flex items-center justify-center py-16 gap-3 text-app-muted">
+              <Loader size={20} className="animate-spin text-brand-green" />
+              <span className="text-sm">Loading courses...</span>
+            </div>
+          ) : courses.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3 text-center px-6">
+              <div className="w-14 h-14 rounded-2xl bg-brand-green-lighter flex items-center justify-center mb-2">
+                <BookOpen size={26} className="text-brand-green" />
+              </div>
+              <p className="font-semibold text-app-fg">No courses yet</p>
+              <p className="text-sm text-app-muted max-w-xs">Start by building your first AI-powered course in seconds.</p>
+              <Link to="/build" className="btn-brand text-sm mt-2">
+                <Plus size={15} /> Create First Course
+              </Link>
+            </div>
+          ) : (
+            <div className="divide-y divide-app-border">
+              {courses.map((course, i) => (
+                <Link
+                  key={course.id || i}
+                  to={`/course/${course.id}`}
+                  className="flex items-center gap-4 px-6 py-4 hover:bg-app-surface2 transition-colors group"
+                >
+                  {/* Color avatar */}
+                  <div className={cn(
+                    'w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white font-bold text-sm',
+                    ['bg-brand-green', 'bg-accent-blue', 'bg-accent-purple'][i % 3]
+                  )}>
+                    {(course.title || course.topic || 'C')[0].toUpperCase()}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-app-fg truncate group-hover:text-brand-green transition-colors">
+                      {course.title || course.topic || 'Untitled Course'}
+                    </p>
+                    <div className="flex items-center gap-3 mt-1.5">
+                      <div className="flex-1 progress-track max-w-[120px]">
+                        <div className="progress-fill" style={{ width: `${course.progress || 0}%` }} />
+                      </div>
+                      <span className="text-xs text-app-muted">{course.progress || 0}%</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className={cn(
+                      'badge',
+                      course.progress === 100 ? 'badge-green' : course.progress > 0 ? 'badge-blue' : 'badge-amber'
+                    )}>
+                      {course.progress === 100 ? 'Completed' : course.progress > 0 ? 'In Progress' : 'New'}
+                    </span>
+                    <ChevronRight size={15} className="text-app-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </motion.div>
+
+        {/* Project Progress ring + stats */}
+        <motion.div
+          initial="hidden" animate="show" variants={FADE_UP} custom={8}
+          className="space-y-4"
+        >
+          {/* Progress ring card */}
+          <div className="card p-6">
+            <h2 className="text-base font-semibold text-app-fg mb-4">Overall Progress</h2>
+
+            {/* SVG ring */}
+            <div className="flex items-center justify-center mb-4">
+              <div className="relative w-32 h-32">
+                <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="#F3F4F6" strokeWidth="12" />
+                  <motion.circle
+                    cx="60" cy="60" r="50"
+                    fill="none" stroke="#16663A" strokeWidth="12"
+                    strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 50}`}
+                    initial={{ strokeDashoffset: 2 * Math.PI * 50 }}
+                    animate={{ strokeDashoffset: 2 * Math.PI * 50 * (1 - 0.41) }}
+                    transition={{ duration: 1.2, ease: 'easeOut' }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-2xl font-display font-bold text-app-fg">41%</span>
+                  <span className="text-xs text-app-muted">Overall</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+              {[
+                { label: 'Completed', color: 'bg-brand-green', pct: 41 },
+                { label: 'In Progress', color: 'bg-accent-blue', pct: 35 },
+                { label: 'Not Started', color: 'bg-gray-200', pct: 24, stripe: true },
+              ].map(item => (
+                <div key={item.label} className="flex items-center gap-2 text-xs">
+                  <div className={cn('w-2.5 h-2.5 rounded-sm flex-shrink-0', item.color)} />
+                  <span className="text-app-muted flex-1">{item.label}</span>
+                  <span className="font-semibold text-app-fg">{item.pct}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick stats */}
+          <div className="card p-5 bg-brand-green text-white">
+            <div className="flex items-center gap-2 mb-3">
+              <BarChart2 size={16} className="text-white/80" />
+              <p className="text-sm font-semibold">This Week</p>
+            </div>
+            <p className="text-3xl font-bold mb-1">4.2 hrs</p>
+            <p className="text-xs text-brand-green-muted">↑ 18% from last week</p>
+            <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
+              <span className="text-xs text-brand-green-muted">Streak</span>
+              <span className="text-sm font-bold text-white">🔥 7 days</span>
+            </div>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }

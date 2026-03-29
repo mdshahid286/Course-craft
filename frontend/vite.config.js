@@ -22,7 +22,9 @@ export default defineConfig({
       },
     },
   },
-  // No proxy needed in unified server mode
+  optimizeDeps: {
+    include: ['cookie'],
+  },
   build: {
     target: 'esnext',
   },

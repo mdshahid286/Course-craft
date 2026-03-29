@@ -1,4 +1,4 @@
-const BASE_URL = '/api';
+const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 import { doc, setDoc, getDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -104,7 +104,7 @@ export async function listUserCourses(userId) {
     const snap = await getDocs(coursesRef);
     const courses = [];
     snap.forEach(doc => {
-      courses.push(doc.data());
+      courses.push({ id: doc.id, ...doc.data() });
     });
     return courses;
   } catch (e) {

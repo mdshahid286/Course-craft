@@ -1,61 +1,66 @@
-import tailwindcssAnimate from "tailwindcss-animate";
-
 /** @type {import('tailwindcss').Config} */
 export default {
-    darkMode: ["class"],
-    content: [
+  darkMode: ["class"],
+  content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-  	extend: {
-  		colors: {
-  			background: '#09090B',
-  			foreground: '#FAFAFA',
-  			sidebar: '#000000',
-        brand: {
-          blue: '#3B82F6',
-          darkBlue: '#1D4ED8',
-          text: '#FAFAFA',
-          muted: '#A1A1AA'
+    extend: {
+      colors: {
+        // App surfaces
+        'app-bg':      '#F4F6F8',
+        'app-surface': '#FFFFFF',
+        'app-surface2':'#F9FAFB',
+        'app-border':  '#E5E7EB',
+        'app-border2': '#D1D5DB',
+        'app-muted':   '#6B7280',
+        'app-muted2':  '#9CA3AF',
+        'app-fg':      '#111827',
+        // Brand green
+        'brand-green': {
+          DEFAULT: '#16663A',
+          light:   '#22C55E',
+          lighter: '#DCFCE7',
+          dark:    '#0F4D2B',
+          muted:   '#BBF7D0',
         },
-  			card: {
-  				DEFAULT: '#18181B',
-  				foreground: '#FAFAFA'
-  			},
-  			border: '#27272A',
-  			input: '#27272A',
-  			ring: '#3B82F6',
-  		},
-  		borderRadius: {
-  			'3xl': '1rem',
+        // Accent colors
+        'accent-blue':   '#2563EB',
+        'accent-purple': '#7C3AED',
+        'accent-amber':  '#D97706',
+        'accent-rose':   '#E11D48',
+      },
+      borderRadius: {
+        '2xl': '1rem',
+        '3xl': '1.25rem',
         '4xl': '1.5rem',
-        '5xl': '2rem',
-        '6xl': '2.5rem',
-  			lg: '0.75rem',
-  			md: '0.5rem',
-  			sm: '0.25rem'
-  		},
+        'xl':  '0.75rem',
+        'lg':  '0.5rem',
+        'md':  '0.375rem',
+      },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'sans-serif'],
-        display: ['Outfit', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        sans:    ['Inter', 'Plus Jakarta Sans', 'sans-serif'],
+        display: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+        mono:    ['JetBrains Mono', 'ui-monospace', 'monospace'],
+      },
+      boxShadow: {
+        'card':      '0 1px 3px 0 rgba(0,0,0,0.05), 0 1px 2px -1px rgba(0,0,0,0.05)',
+        'card-hover':'0 4px 12px 0 rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.06)',
+        'brand':     '0 4px 14px 0 rgba(22,102,58,0.2)',
+        'brand-lg':  '0 8px 30px 0 rgba(22,102,58,0.25)',
+        'modal':     '0 20px 60px rgba(0,0,0,0.12)',
       },
       animation: {
-        'glow-pulse': 'glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'orbit': 'orbit 20s linear infinite',
+        'fade-in':   'fadeIn 0.3s ease-out',
+        'slide-up':  'slideUp 0.4s ease-out',
+        'spin-slow': 'spin 3s linear infinite',
       },
       keyframes: {
-        glow: {
-          '0%, 100%': { opacity: 1, filter: 'brightness(1)' },
-          '50%': { opacity: 0.8, filter: 'brightness(1.5)' },
-        },
-        orbit: {
-          from: { transform: 'rotate(0deg) translateX(100px) rotate(0deg)' },
-          to: { transform: 'rotate(360deg) translateX(100px) rotate(-360deg)' },
-        }
-      }
-  	}
+        fadeIn:  { from: { opacity: '0' },             to: { opacity: '1' } },
+        slideUp: { from: { opacity: '0', transform: 'translateY(10px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+      },
+    },
   },
-  plugins: [tailwindcssAnimate],
-}
+  plugins: [],
+};

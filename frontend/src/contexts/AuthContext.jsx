@@ -27,7 +27,13 @@ export function AuthProvider({ children }) {
       setLoading(false);
     });
 
-    return unsub;
+    // Safety timeout to prevent white screen if Firebase hangs
+    const timeout = setTimeout(() => setLoading(false), 2000);
+
+    return () => {
+      unsub();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const saveUserToFirestore = async (user, additionalData = {}) => {
