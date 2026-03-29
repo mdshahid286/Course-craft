@@ -2,8 +2,20 @@ const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 import { doc, setDoc, getDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
+/**
+ * Normalizes URL paths by removing double-slashes and ensuring the correct prefix.
+ * @param {string} base - The host base URL (e.g. 'https://myapi.com/api')
+ * @param {string} path - The endpoint path (e.g. '/course/create')
+ */
+function buildUrl(base, path) {
+  const cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${cleanBase}${cleanPath}`;
+}
+
 async function request(method, path, body) {
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const url = buildUrl(BASE_URL, path);
+  const res = await fetch(url, {
     method,
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
