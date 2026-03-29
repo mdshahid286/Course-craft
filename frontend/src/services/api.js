@@ -8,8 +8,18 @@ import { db } from '../firebase';
  * @param {string} path - The endpoint path (e.g. '/course/create')
  */
 function buildUrl(base, path) {
-  const cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;
+  // 1. Remove trailing slash from base
+  let cleanBase = base.endsWith('/') ? base.slice(0, -1) : base;
+
+  // 2. If base is a separate domain (production) and doesn't happen to end in /api, add it!
+  // This helps when the user puts their Render URL as only 'https://domain.com'
+  if (cleanBase.startsWith('http') && !cleanBase.toLowerCase().endsWith('/api')) {
+    cleanBase += '/api';
+  }
+
+  // 3. Ensure path starts with a single slash
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
+
   return `${cleanBase}${cleanPath}`;
 }
 
