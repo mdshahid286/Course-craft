@@ -4,9 +4,12 @@ import {
   onAuthStateChanged, 
   signInWithPopup, 
   GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   signOut
 } from 'firebase/auth';
-import { auth } from '../firebase';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 
 const AuthContext = createContext();
 
@@ -27,9 +30,49 @@ export function AuthProvider({ children }) {
     return unsub;
   }, []);
 
-  const loginWithGoogle = () => {
+  const saveUserToFirestore = async (user, additionalData = {}) => {
+    if (!user) return;
+    const userRef = doc(db, 'users', user.uid);
+    const snapshot = await getDoc(userRef);
+    
+    if (!snapshot.exists()) {
+      try {
+        await setDoc(userRef, {
+          email: user.email,
+          displayName: user.displayName || additionalData.displayName || '',
+          photoURL: user.photoURL || '',
+          createdAt: serverTimestamp(),
+          ...additionalData
+        });
+      } catch (error) {
+        console.error("Error creating user document", error);
+      }
+    }
+  };
+
+  const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    try {
+      await saveUserToFirestore(result.user);
+    } catch (e) {
+      console.error("Non-blocking Firestore save error:", e);
+    }
+    return result;
+  };
+
+  const signup = async (email, password, displayName) => {
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+    try {
+      await saveUserToFirestore(result.user, { displayName });
+    } catch (e) {
+      console.error("Non-blocking Firestore save error:", e);
+    }
+    return result;
+  };
+
+  const login = (email, password) => {
+    return signInWithEmailAndPassword(auth, email, password);
   };
 
   const logout = () => {
@@ -39,6 +82,8 @@ export function AuthProvider({ children }) {
   const value = {
     currentUser,
     loginWithGoogle,
+    signup,
+    login,
     logout
   };
 

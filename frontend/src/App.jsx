@@ -1,6 +1,7 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import CourseBuilderPage from './pages/CourseBuilderPage';
@@ -8,7 +9,10 @@ import CourseViewPage from './pages/CourseViewPage';
 import QuizPage from './pages/QuizPage';
 import CoursesPage from './pages/CoursesPage';
 import SettingsPage from './pages/SettingsPage';
+import CommunityPage from './pages/CommunityPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import './index.css';
 
@@ -17,18 +21,19 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           
           {/* Dashboard and related pages are wrapped in the Playroom Layout */}
-          <Route path="/" element={<Layout><DashboardPage /></Layout>} />
-          <Route path="/courses" element={<Layout><CoursesPage /></Layout>} />
-          <Route path="/settings" element={<Layout><SettingsPage /></Layout>} />
+          <Route path="/dashboard" element={<ProtectedRoute><Layout><DashboardPage /></Layout></ProtectedRoute>} />
+          <Route path="/courses" element={<ProtectedRoute><Layout><CoursesPage /></Layout></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
           
-          <Route path="/build" element={<Layout><CourseBuilderPage /></Layout>} />
-          <Route path="/course/:courseId" element={<Layout><CourseViewPage /></Layout>} /> 
-          <Route path="/lesson/:lessonId/practice" element={<Layout><QuizPage /></Layout>} />
-          <Route path="/students" element={<Layout><div className="p-10 font-display text-2xl font-bold">Students Directory Coming Soon</div></Layout>} />
-          <Route path="/insights" element={<Layout><div className="p-10 font-display text-2xl font-bold">Insights coming soon</div></Layout>} />
+          <Route path="/build" element={<ProtectedRoute><Layout><CourseBuilderPage /></Layout></ProtectedRoute>} />
+          <Route path="/course/:courseId" element={<ProtectedRoute><Layout><CourseViewPage /></Layout></ProtectedRoute>} /> 
+          <Route path="/lesson/:lessonId/practice" element={<ProtectedRoute><Layout><QuizPage /></Layout></ProtectedRoute>} />
+          <Route path="/community" element={<ProtectedRoute><Layout><CommunityPage /></Layout></ProtectedRoute>} />
+          <Route path="/analytics" element={<ProtectedRoute><Layout><AnalyticsPage /></Layout></ProtectedRoute>} />
         </Routes>
       </Router>
     </AuthProvider>

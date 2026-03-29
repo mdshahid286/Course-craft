@@ -2,8 +2,8 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const prompts = require('./prompt.templates.js');
 
 const API_KEY = process.env.GEMINI_API_KEY;
-const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
-const FALLBACK_MODELS = (process.env.GEMINI_FALLBACK_MODELS || 'gemini-1.5-flash,gemini-2.0-flash')
+const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite';
+const FALLBACK_MODELS = (process.env.GEMINI_FALLBACK_MODELS || 'gemini-2.5-flash')
     .split(',')
     .map(s => s.trim())
     .filter(Boolean);
@@ -89,7 +89,20 @@ async function generateJson(modelName, prompt) {
             // Cleanup markdown code blocks
             text = text.replace(/^```json\s*/g, '').replace(/\s*```$/g, '').trim();
             
-            return JSON.parse(text);
+            try {
+                return JSON.parse(text);
+            } catch (parseErr) {
+                // Best-effort sanitization: escape unescaped backslashes (often from LaTeX/Markdown)
+                // This targets single backslashes not followed by valid JSON escape sequences
+                let sanitized = text.replace(/\\(?!["\\/bfnrt])/g, '\\\\');
+                // Also remove any control characters that break JSON
+                sanitized = sanitized.replace(/[\u0000-\u001F]+/g, ' ');
+                try {
+                    return JSON.parse(sanitized);
+                } catch (sanitizedErr) {
+                    throw parseErr;
+                }
+            }
         } catch (err) {
             const status = err?.status;
             const retriable = status === 429 || status === 503;
@@ -199,8 +212,10 @@ Return this exact JSON structure:
 
 Rules:
 - 2-3 modules, 2-3 lessons per module.
-- "content.explanation" MUST be rich markdown content.
-- "videoScript.scenes" must have 3-5 scenes.
+- CRITICAL: Keep all content EXTREMELY CONCISE and brief to fit within strict model output limits (max 65k tokens).
+- CRITICAL JSON Escaping: All JSON strings MUST be strictly valid. Double-escape backslashes (e.g. \\textbf or \\\\n) and avoid unescaped quotes or newlines inside strings.
+- "content.explanation" MUST be rich markdown content but limit to 2-3 short paragraphs max.
+- "videoScript.scenes" must have exactly 3 short scenes.
 - Use only the allowed scene types.
 - Ensure all IDs are unique and JSON is valid.
 `.trim();

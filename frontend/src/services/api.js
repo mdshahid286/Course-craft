@@ -1,4 +1,6 @@
 const BASE_URL = '/api';
+import { doc, setDoc, getDoc, collection, getDocs, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
 
 async function request(method, path, body) {
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -17,8 +19,8 @@ async function request(method, path, body) {
  * Creates a full course (outline + lesson content + video scripts + starts Manim renders).
  * @returns { courseId, course }
  */
-export async function createCourse(topic, difficulty = 'Beginner') {
-  return request('POST', '/course/create', { topic, difficulty });
+export async function createCourse(topic, difficulty = 'Beginner', userId = null) {
+  return request('POST', '/course/create', { topic, difficulty, userId });
 }
 
 /** Returns full course object from the server. */
@@ -53,38 +55,99 @@ export async function getVideoStatus(jobId) {
   return request('GET', `/video/status/${jobId}`);
 }
 
-// ─── LocalStorage helpers ─────────────────────────────────────────────────────
+// ─── Firestore helpers ─────────────────────────────────────────────────────
 
-export function storeCourse(courseId, courseData) {
+export async function storeCourse(userId, courseId, courseData) {
+  if (!userId) {
+    console.warn('No userId provided. Falling back to localStorage.');
+    try {
+      localStorage.setItem(`course:${courseId}`, JSON.stringify(courseData));
+    } catch (e) {
+      console.warn('Failed to store course in localStorage', e);
+    }
+    return;
+  }
   try {
-    localStorage.setItem(`course:${courseId}`, JSON.stringify(courseData));
+    const courseRef = doc(db, 'users', userId, 'courses', courseId);
+    await setDoc(courseRef, { ...courseData, updatedAt: serverTimestamp() });
   } catch (e) {
-    console.warn('Failed to store course in localStorage', e);
+    console.error('Failed to store course in Firestore', e);
   }
 }
 
-export function loadCourse(courseId) {
+export async function loadCourse(userId, courseId) {
+  if (!userId) {
+    try {
+      const raw = localStorage.getItem(`course:${courseId}`);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
   try {
-    const raw = localStorage.getItem(`course:${courseId}`);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
+    const courseRef = doc(db, 'users', userId, 'courses', courseId);
+    const snap = await getDoc(courseRef);
+    if (snap.exists()) {
+      return snap.data();
+    }
+    return null;
+  } catch (e) {
+    console.error('Failed to load course from Firestore', e);
     return null;
   }
 }
 
-export function storeNotes(lessonId, notes) {
+export async function listUserCourses(userId) {
+  if (!userId) return [];
   try {
-    localStorage.setItem(`notes:${lessonId}`, JSON.stringify(notes));
-  } catch {
-    return;
+    const coursesRef = collection(db, 'users', userId, 'courses');
+    const snap = await getDocs(coursesRef);
+    const courses = [];
+    snap.forEach(doc => {
+      courses.push(doc.data());
+    });
+    return courses;
+  } catch (e) {
+    console.error('Failed to list courses from Firestore', e);
+    return [];
   }
 }
 
-export function loadNotes(lessonId) {
+export async function storeNotes(userId, lessonId, notes) {
+  if (!userId) {
+    try {
+      localStorage.setItem(`notes:${lessonId}`, JSON.stringify(notes));
+    } catch {
+      return;
+    }
+    return;
+  }
   try {
-    const raw = localStorage.getItem(`notes:${lessonId}`);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
+    const notesRef = doc(db, 'users', userId, 'notes', lessonId);
+    await setDoc(notesRef, { notes, updatedAt: serverTimestamp() });
+  } catch (e) {
+    console.error('Failed to store notes in Firestore', e);
+  }
+}
+
+export async function loadNotes(userId, lessonId) {
+  if (!userId) {
+    try {
+      const raw = localStorage.getItem(`notes:${lessonId}`);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+  try {
+    const notesRef = doc(db, 'users', userId, 'notes', lessonId);
+    const snap = await getDoc(notesRef);
+    if (snap.exists()) {
+      return snap.data().notes || [];
+    }
+    return [];
+  } catch (e) {
+    console.error('Failed to load notes from Firestore', e);
     return [];
   }
 }

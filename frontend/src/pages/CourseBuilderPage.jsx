@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Sparkles, ArrowRight, Lightbulb, BookOpen, Clock, FileText, X, AlertCircle } from 'lucide-react';
 import { createCourse, storeCourse } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 /**
  * Converts the backend course schema (modules[].lessons[]) to the shape
@@ -34,25 +35,58 @@ const SUGGESTIONS = [
   'Web3 and Blockchain',
   'UI/UX Design Fundamentals',
   'Calculus for Engineers',
-  'Neural Networks & Deep Learning',
+  'Neural Networks',
 ];
 
 const STEPS = [
-  { label: 'Understanding your topic...', icon: Lightbulb },
-  { label: 'Structuring the curriculum...', icon: BookOpen },
-  { label: 'Generating lesson content with AI...', icon: Sparkles },
-  { label: 'Preparing video animations...', icon: Clock },
-  { label: 'Finalising your course...', icon: FileText },
+  { label: 'Analyzing request...', icon: Lightbulb },
+  { label: 'Drafting syllabus...', icon: BookOpen },
+  { label: 'Writing detailed content...', icon: Sparkles },
+  { label: 'Generating visualizations...', icon: Clock },
+  { label: 'Finalizing course...', icon: FileText },
 ];
 
 export default function CourseBuilderPage() {
   const navigate = useNavigate();
-  const [query, setQuery] = useState('');
+  const location = useLocation();
+  const [query, setQuery] = useState(location.state?.initialQuery || '');
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [done, setDone] = useState(false);
   const [error, setError] = useState(null);
   const [courseId, setCourseId] = useState(null);
+
+  const { currentUser } = useAuth();
+
+  const performGeneration = async (q) => {
+    if (!q.trim()) return;
+    setIsGenerating(true);
+    setCurrentStep(0);
+    setDone(false);
+    setError(null);
+    setCourseId(null);
+
+    try {
+      const { courseId, course } = await createCourse(q, 'Beginner', currentUser?.uid);
+      const normalized = normalizeCourse({ ...course, id: courseId });
+      // Redundant storeCourse removed - Backend handles persistence now.
+      setCourseId(courseId);
+      setCurrentStep(STEPS.length - 1);
+      setDone(true);
+    } catch (err) {
+      setError(err.message || 'Course generation failed. Check your connection.');
+      setIsGenerating(false);
+    }
+  };
+
+  const handleGenerate = () => performGeneration(query);
+
+  // Handle auto-generation if query is passed from dashboard
+  useEffect(() => {
+    if (location.state?.initialQuery && !isGenerating && !done && !error) {
+      performGeneration(location.state.initialQuery);
+    }
+  }, [location.state, currentUser]);
 
   // Advance the UI step indicator while the API call is running
   useEffect(() => {
@@ -64,29 +98,6 @@ export default function CourseBuilderPage() {
     }
     return () => clearInterval(t);
   }, [isGenerating, done, error]);
-
-  const handleGenerate = async () => {
-    if (!query.trim()) return;
-    setIsGenerating(true);
-    setCurrentStep(0);
-    setDone(false);
-    setError(null);
-    setCourseId(null);
-
-    try {
-      // Call the backend — it handles Gemini with the server-side API key
-      const { courseId, course } = await createCourse(query, 'Beginner');
-      // Normalize backend schema → UI schema before caching
-      const normalized = normalizeCourse({ ...course, id: courseId });
-      storeCourse(courseId, normalized);
-      setCourseId(courseId);
-      setCurrentStep(STEPS.length - 1);
-      setDone(true);
-    } catch (err) {
-      setError(err.message || 'Course generation failed. Check your API key.');
-      setIsGenerating(false);
-    }
-  };
 
   const handleViewCourse = () => {
     if (courseId) navigate(`/course/${courseId}`);
@@ -101,49 +112,50 @@ export default function CourseBuilderPage() {
   };
 
   return (
-    <div className="min-h-full flex flex-col">
+    <div className="min-h-[calc(100vh-100px)] flex flex-col relative bg-[#FAFAFA]">
+      
       {!isGenerating ? (
         /* ── Input Screen ── */
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
-          <div className="text-center mb-12 max-w-2xl">
-            <div className="w-20 h-20 bg-gradient-to-br from-brand-blue to-cyan-400 rounded-4xl mx-auto mb-8 flex items-center justify-center shadow-xl shadow-brand-blue/30">
-              <Sparkles size={36} className="text-white" />
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-16 relative z-10">
+          <div className="text-center mb-10 max-w-2xl">
+            <div className="w-16 h-16 bg-blue-50 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-sm border border-blue-100">
+              <Sparkles size={28} className="text-brand-blue" />
             </div>
-            <h1 className="text-5xl md:text-6xl font-display font-black tracking-tight text-brand-text mb-4 leading-tight">
-              Build a Course<br /><span className="text-brand-blue">with AI</span>
+            <h1 className="text-4xl md:text-5xl font-display font-bold tracking-tight text-slate-900 mb-4">
+              What do you want to learn?
             </h1>
-            <p className="text-brand-muted text-xl font-medium">
-              Describe a topic and get a full course with notes, quizzes, and animated explainer videos — instantly.
+            <p className="text-slate-500 text-lg">
+              Our AI will build a complete, structured course for you with interactive visuals.
             </p>
           </div>
 
-          <div className="w-full max-w-2xl mb-6">
-            <div className="bg-white rounded-4xl shadow-[0_12px_40px_rgba(0,0,0,0.06)] p-3 flex gap-3 items-center border border-border/50">
+          <div className="w-full max-w-2xl mb-8">
+            <div className="bg-white rounded-[1.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-2.5 flex gap-2 items-center border border-slate-200 focus-within:border-brand-blue focus-within:ring-4 focus-within:ring-brand-blue/10 transition-all">
               <input
                 type="text"
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleGenerate()}
                 placeholder="e.g. Introduction to Machine Learning..."
-                className="flex-1 bg-transparent border-none outline-none text-lg text-brand-text placeholder-brand-muted/50 px-4 py-2 font-medium"
+                className="flex-1 bg-transparent border-none outline-none text-lg text-slate-900 placeholder-slate-400 px-5 py-3 font-medium"
               />
               <button
                 onClick={handleGenerate}
                 disabled={!query.trim()}
-                className="bg-brand-blue hover:bg-brand-darkBlue disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-4 px-8 rounded-3xl flex items-center gap-2 transition-all shadow-[0_4px_14px_rgba(22,129,208,0.4)] hover:-translate-y-0.5"
+                className="bg-brand-blue hover:bg-blue-600 disabled:opacity-50 disabled:hover:bg-brand-blue text-white font-bold py-3.5 px-8 rounded-xl flex items-center gap-2 transition-all shadow-md"
               >
                 Generate <ArrowRight size={18} />
               </button>
             </div>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-3 max-w-2xl">
-            <span className="text-brand-muted text-sm font-semibold self-center">Try:</span>
+          <div className="flex flex-wrap justify-center gap-3 max-w-3xl">
+            <span className="text-slate-400 text-sm font-semibold self-center mr-1">Try:</span>
             {SUGGESTIONS.map(s => (
               <button
                 key={s}
                 onClick={() => setQuery(s)}
-                className="bg-white border border-border text-brand-text text-sm font-semibold px-4 py-2 rounded-full hover:border-brand-blue/40 hover:text-brand-blue transition-all"
+                className="bg-white border border-slate-200 text-slate-600 text-sm font-medium px-4 py-2 rounded-full hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm"
               >
                 {s}
               </button>
@@ -152,20 +164,21 @@ export default function CourseBuilderPage() {
         </div>
       ) : (
         /* ── Generating / Error / Done Screen ── */
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-20">
-          <div className="w-full max-w-xl text-center">
-
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-10 relative z-10">
+          <div className="w-full max-w-md text-center bg-white border border-slate-200 p-10 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+            
             {/* Error State */}
             {error && (
-              <div>
-                <div className="w-24 h-24 bg-red-100 rounded-full mx-auto mb-8 flex items-center justify-center">
-                  <AlertCircle size={44} className="text-red-500" />
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-red-50 rounded-full mx-auto mb-6 flex items-center justify-center border border-red-100">
+                  <AlertCircle size={32} className="text-red-500" />
                 </div>
-                <h2 className="text-3xl font-display font-bold text-brand-text mb-3">Something went wrong</h2>
-                <p className="text-brand-muted mb-2 font-medium">"{query}"</p>
-                <div className="bg-red-50 border border-red-200 text-red-700 rounded-3xl p-5 text-sm mb-8 text-left font-mono">{error}</div>
-                <p className="text-brand-muted text-sm mb-8">Make sure the backend is running: <code className="bg-[#F7F4EE] px-2 py-1 rounded font-mono text-xs">cd backend && node index.js</code></p>
-                <button onClick={handleReset} className="bg-brand-blue text-white font-bold py-4 px-10 rounded-full">
+                <h2 className="text-2xl font-display font-bold text-slate-900 mb-2">Generation Failed</h2>
+                <p className="text-slate-500 mb-6 font-medium">"{query}"</p>
+                <div className="bg-red-50 border border-red-100 text-red-600 rounded-xl p-4 text-sm mb-8 text-left break-words">
+                  {error}
+                </div>
+                <button onClick={handleReset} className="bg-white border border-slate-300 text-slate-700 font-bold py-3 px-8 rounded-xl hover:bg-slate-50 transition-colors shadow-sm w-full">
                   Try Again
                 </button>
               </div>
@@ -173,16 +186,16 @@ export default function CourseBuilderPage() {
 
             {/* Generating State */}
             {!error && !done && (
-              <>
-                <div className="relative w-28 h-28 mx-auto mb-10">
-                  <div className="absolute inset-0 rounded-full border-4 border-brand-blue/20"></div>
+              <div className="relative z-10">
+                <div className="relative w-24 h-24 mx-auto mb-8">
+                  <div className="absolute inset-0 rounded-full border-4 border-slate-100"></div>
                   <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-brand-blue animate-spin"></div>
-                  <div className="absolute inset-3 rounded-full bg-gradient-to-br from-brand-blue to-cyan-400 flex items-center justify-center shadow-lg">
-                    <Sparkles size={32} className="text-white" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Sparkles size={28} className="text-brand-blue animate-pulse" />
                   </div>
                 </div>
-                <h2 className="text-3xl font-display font-bold text-brand-text mb-2">Building your course...</h2>
-                <p className="text-brand-muted mb-10 font-medium">"{query}" — this usually takes 15–30 seconds</p>
+                
+                <h2 className="text-xl font-display font-bold text-slate-900 mb-8">Building Course...</h2>
 
                 <div className="space-y-3 text-left">
                   {STEPS.map((step, i) => {
@@ -190,34 +203,33 @@ export default function CourseBuilderPage() {
                     const isActive = i === currentStep;
                     const isDone = i < currentStep;
                     return (
-                      <div key={i} className={`flex items-center gap-4 p-4 rounded-3xl transition-all ${isActive ? 'bg-white shadow-md border border-border' : isDone ? 'bg-[#F0FDF4]' : 'bg-[#F7F4EE] opacity-40'}`}>
-                        <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${isDone ? 'bg-green-500 text-white' : isActive ? 'bg-brand-blue text-white' : 'bg-white text-brand-muted'}`}>
-                          {isDone ? '✓' : <Icon size={16} />}
+                      <div key={i} className={`flex items-center gap-4 p-3 rounded-xl transition-all duration-300 ${isActive ? 'bg-blue-50 border border-blue-100' : 'bg-transparent'}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${isDone ? 'bg-green-100 text-green-600' : isActive ? 'bg-brand-blue text-white' : 'bg-slate-100 text-slate-400'}`}>
+                          {isDone ? '✓' : <Icon size={14} />}
                         </div>
-                        <span className={`font-semibold ${isActive ? 'text-brand-text' : isDone ? 'text-green-700' : 'text-brand-muted'}`}>{step.label}</span>
-                        {isActive && <div className="ml-auto w-5 h-5 rounded-full border-2 border-brand-blue border-t-transparent animate-spin" />}
+                        <span className={`font-medium text-[15px] ${isActive ? 'text-brand-blue' : isDone ? 'text-slate-700' : 'text-slate-400'}`}>{step.label}</span>
                       </div>
                     );
                   })}
                 </div>
-              </>
+              </div>
             )}
 
             {/* Done State */}
             {!error && done && (
-              <div>
-                <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full mx-auto mb-8 flex items-center justify-center shadow-xl shadow-green-500/30 text-4xl">
+              <div className="relative z-10">
+                <div className="w-20 h-20 bg-green-100 rounded-full mx-auto mb-6 flex items-center justify-center text-green-600 text-3xl font-bold">
                   ✓
                 </div>
-                <h2 className="text-4xl font-display font-black text-brand-text mb-3">Course Ready!</h2>
-                <p className="text-brand-muted text-xl mb-2 font-medium">"{query}"</p>
-                <p className="text-brand-muted mb-10 text-sm">AI-generated notes, quizzes & animated explainers</p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button onClick={handleViewCourse} className="bg-brand-blue hover:bg-brand-darkBlue text-white font-bold py-4 px-10 rounded-full shadow-[0_4px_14px_rgba(22,129,208,0.4)] transition-all hover:-translate-y-0.5 flex items-center gap-2">
-                    View Course <ArrowRight size={18} />
+                <h2 className="text-2xl font-display font-bold text-slate-900 mb-2">Course Ready!</h2>
+                <p className="text-slate-500 mb-8 font-medium">"{query}" has been generated successfully.</p>
+                
+                <div className="flex flex-col gap-3">
+                  <button onClick={handleViewCourse} className="bg-brand-blue hover:bg-blue-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition-all flex items-center justify-center gap-2">
+                    Start Learning <ArrowRight size={18} />
                   </button>
-                  <button onClick={handleReset} className="bg-white border border-border text-brand-muted font-bold py-4 px-10 rounded-full hover:border-brand-blue/30 hover:text-brand-blue transition-all flex items-center gap-2">
-                    <X size={16} /> Build Another
+                  <button onClick={handleReset} className="bg-white border border-slate-200 text-slate-600 font-bold py-3.5 px-6 rounded-xl hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
+                     Create Another
                   </button>
                 </div>
               </div>

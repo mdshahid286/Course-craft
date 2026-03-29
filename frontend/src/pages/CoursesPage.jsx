@@ -1,26 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Play, Search, Filter, BookMarked, Clock, Star, PlusCircle, ChevronRight, Sparkles } from 'lucide-react';
-
-const SAMPLE_COURSES = [
-  { id: 1, title: 'Intro to 3D Design', category: 'Design', lessons: 12, progress: 65, color: '#36A8FA', rating: 4.8, duration: '6h 30m', status: 'in-progress' },
-  { id: 2, title: 'Robotics Workshop', category: 'Tech & AI', lessons: 8, progress: 20, color: '#FA8771', rating: 4.6, duration: '4h 15m', status: 'in-progress' },
-  { id: 3, title: 'Color Theory Pro', category: 'Digital Arts', lessons: 16, progress: 90, color: '#F6B45A', rating: 4.9, duration: '8h 00m', status: 'in-progress' },
-  { id: 4, title: 'Machine Learning Basics', category: 'Tech & AI', lessons: 20, progress: 0, color: '#7C4DFF', rating: 4.7, duration: '10h 30m', status: 'not-started' },
-  { id: 5, title: 'Narrative Design', category: 'Storytelling', lessons: 10, progress: 100, color: '#26A69A', rating: 5.0, duration: '5h 00m', status: 'completed' },
-  { id: 6, title: 'Advanced Python', category: 'Tech & AI', lessons: 24, progress: 0, color: '#EC407A', rating: 4.5, duration: '12h 00m', status: 'not-started' },
-];
+import { Play, Search, Filter, BookMarked, Clock, Star, PlusCircle, ChevronRight, Sparkles, Code, Loader } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../contexts/AuthContext';
+import { listUserCourses } from '../services/api';
 
 const TABS = ['All', 'In Progress', 'Completed', 'Not Started'];
-const CATEGORIES = ['All', 'Tech & AI', 'Design', 'Digital Arts', 'Storytelling'];
+const CATEGORIES = ['All', 'Tech & AI', 'Physics & CS', 'Engineering', 'Digital Arts'];
 
 export default function CoursesPage() {
+  const { currentUser } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('All');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = SAMPLE_COURSES.filter(course => {
-    const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase());
+  useEffect(() => {
+    async function fetchCourses() {
+      if (!currentUser) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const userCourses = await listUserCourses(currentUser.uid);
+        
+        // Map backend structure to UI expectations
+        const mapped = userCourses.map(c => {
+          const lessonCount = c.modules?.reduce((acc, m) => acc + (m.topics?.length || 0), 0) || 0;
+          return {
+            id: c.id,
+            title: c.title || c.topic || 'Untitled Course',
+            category: c.category || 'Tech & AI', // Default or fallback
+            lessons: lessonCount,
+            progress: c.progress || 0,
+            color: c.color || '#3B82F6',
+            rating: c.rating || 5.0,
+            duration: c.duration || '2h 30m',
+            status: c.status || (c.progress === 100 ? 'completed' : c.progress > 0 ? 'in-progress' : 'not-started')
+          };
+        });
+        setCourses(mapped);
+      } catch (err) {
+        console.error('Failed to load courses', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCourses();
+  }, [currentUser]);
+
+  const filtered = courses.filter(course => {
+    const titleMatch = course.title || '';
+    const matchesSearch = titleMatch.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTab = activeTab === 'All'
       || (activeTab === 'In Progress' && course.status === 'in-progress')
       || (activeTab === 'Completed' && course.status === 'completed')
@@ -29,38 +61,50 @@ export default function CoursesPage() {
     return matchesSearch && matchesTab && matchesCategory;
   });
 
+  if (loading) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 py-32 text-center w-full min-h-screen">
+        <Loader size={48} className="text-brand-blue animate-spin" />
+        <h2 className="text-xl font-display font-medium text-slate-700">Loading your courses...</h2>
+      </div>
+    );
+  }
+
   return (
-    <div className="px-6 md:px-10 py-8 max-w-6xl mx-auto w-full">
+    <div className="px-6 md:px-10 py-8 max-w-7xl mx-auto w-full min-h-screen">
+      
       {/* Page Header */}
-      <div className="flex items-start justify-between mb-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-6">
         <div>
-          <h1 className="text-4xl font-display font-extrabold tracking-tight text-brand-text mb-1">My Courses</h1>
-          <p className="text-brand-muted font-medium">All your learning blocks in one place</p>
+          <h1 className="text-3xl md:text-4xl font-display font-bold tracking-tight text-slate-900 mb-2">My Courses</h1>
+          <p className="text-slate-500 font-medium text-lg">Your generated learning paths.</p>
         </div>
-        <Link to="/build" className="flex items-center gap-2 bg-brand-blue hover:bg-brand-darkBlue text-white font-bold py-3.5 px-7 rounded-full shadow-[0_4px_14px_rgba(22,129,208,0.35)] transition-all hover:-translate-y-0.5">
+        <Link to="/build" className="flex items-center justify-center gap-2 bg-brand-blue hover:bg-blue-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-md transition-all">
           <PlusCircle size={18} />
           New Course
         </Link>
       </div>
 
       {/* Search & Filters */}
-      <div className="bg-white p-4 rounded-3xl shadow-sm border border-border mb-8 flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 flex items-center gap-3 bg-[#F7F4EE] px-5 py-3 rounded-full">
-          <Search size={17} className="text-brand-muted flex-shrink-0" />
+      <div className="bg-white border border-slate-200 p-3 rounded-2xl shadow-sm flex flex-col md:flex-row gap-3 mb-8">
+        
+        <div className="flex-1 flex items-center gap-3 bg-slate-50 border border-slate-100 px-4 py-3 rounded-xl focus-within:border-brand-blue/30 focus-within:bg-white transition-all">
+          <Search size={18} className="text-slate-400 flex-shrink-0" />
           <input
             type="text"
             placeholder="Search courses..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="bg-transparent border-none outline-none text-brand-text w-full text-sm font-medium placeholder-brand-muted/60"
+            className="bg-transparent border-none outline-none text-slate-900 w-full text-[15px] placeholder-slate-400"
           />
         </div>
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           {CATEGORIES.map(cat => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`text-xs font-bold px-4 py-2.5 rounded-full whitespace-nowrap transition-all ${activeCategory === cat ? 'bg-brand-darkBlue text-white shadow-sm' : 'bg-[#F7F4EE] text-brand-muted hover:text-brand-text'}`}
+              className={`text-[13px] font-semibold px-4 py-3 rounded-xl whitespace-nowrap transition-all border ${activeCategory === cat ? 'bg-slate-900 border-slate-900 text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
             >
               {cat}
             </button>
@@ -69,88 +113,90 @@ export default function CoursesPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-8 overflow-x-auto no-scrollbar pb-1">
+      <div className="flex gap-2 mb-8 overflow-x-auto no-scrollbar border-b border-slate-200 pb-px">
         {TABS.map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`text-sm font-bold px-6 py-3 rounded-full whitespace-nowrap transition-all ${activeTab === tab ? 'bg-brand-blue text-white shadow-[0_4px_14px_rgba(22,129,208,0.3)]' : 'bg-white text-brand-muted border border-border hover:border-brand-blue/30'}`}
+            className={`text-sm font-semibold px-4 py-3 whitespace-nowrap transition-all border-b-2 ${activeTab === tab ? 'border-brand-blue text-brand-blue' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
           >
             {tab}
           </button>
         ))}
       </div>
 
-      {/* AI Generate Prompt Banner */}
-      <div className="bg-gradient-to-r from-brand-peach to-[#FDF5F0] rounded-4xl px-8 py-6 mb-8 flex items-center gap-5 border border-white shadow-sm">
-        <div className="w-12 h-12 bg-brand-blue rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
-          <Sparkles size={22} className="text-white" />
-        </div>
-        <div className="flex-1">
-          <h3 className="font-display font-bold text-lg text-brand-text">Discover something new</h3>
-          <p className="text-brand-muted text-sm">Let AI build you a personalized course on any topic.</p>
-        </div>
-        <Link to="/build" className="flex-shrink-0 bg-brand-blue hover:bg-brand-darkBlue text-white font-bold py-3 px-6 rounded-full text-sm transition-colors shadow-sm">
-          Generate
-        </Link>
-      </div>
-
       {/* Course Grid */}
       {filtered.length === 0 ? (
-        <div className="text-center py-24">
-          <p className="text-5xl mb-6">🎮</p>
-          <h3 className="font-display font-bold text-2xl text-brand-text mb-2">No courses found</h3>
-          <p className="text-brand-muted mb-6">Try a different filter or create a new course.</p>
-          <Link to="/build" className="bg-brand-blue text-white font-bold py-3 px-8 rounded-full">Generate a Course</Link>
+        <div className="text-center py-24 bg-white rounded-3xl border border-dashed border-slate-300">
+          <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4">
+             <Code size={24} className="text-slate-400" />
+          </div>
+          <h3 className="font-display font-bold text-xl text-slate-900 mb-2">No courses found</h3>
+          <p className="text-slate-500 mb-6">Try adjusting your filters or create a new one.</p>
+          <Link to="/build" className="text-brand-blue font-bold hover:underline">Generate Content</Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filtered.map(course => (
-            <Link key={course.id} to={`/course/${course.id}`} className="group block">
-              <div className="bg-white p-7 rounded-5xl shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)] transition-all border border-transparent hover:border-white/80 cursor-pointer">
-                <div className="flex items-start justify-between mb-5">
-                  <div className="w-14 h-14 rounded-[1.1rem] flex items-center justify-center shadow-sm text-white transform group-hover:-translate-y-1 transition-transform" style={{ backgroundColor: course.color }}>
-                    <BookMarked size={24} />
-                  </div>
-                  <div className="flex items-center gap-1 bg-[#F7F4EE] px-3 py-1.5 rounded-full">
-                    <Star size={12} className="text-brand-yellow fill-brand-yellow" />
-                    <span className="text-xs font-extrabold text-brand-text">{course.rating}</span>
-                  </div>
-                </div>
-                
-                <div className="mb-1">
-                  <span className="text-[10px] font-extrabold tracking-widest uppercase" style={{ color: course.color }}>{course.category}</span>
-                </div>
-                <h3 className="font-display font-bold text-xl tracking-tight text-brand-text mb-4">{course.title}</h3>
-                
-                {course.progress > 0 && (
-                  <div className="mb-4">
-                    <div className="flex justify-between items-center mb-1.5">
-                      <span className="text-xs text-brand-muted font-semibold">Progress</span>
-                      <span className="text-xs font-extrabold" style={{ color: course.color }}>{course.progress}%</span>
+        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <AnimatePresence>
+            {filtered.map((course, i) => (
+              <motion.div
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.2, delay: i * 0.05 }}
+                key={course.id}
+              >
+                <Link to={`/course/${course.id}`} className="group block h-full">
+                  <div className="bg-white border border-slate-200 p-6 rounded-3xl shadow-sm hover:shadow-md hover:border-slate-300 transition-all cursor-pointer h-full flex flex-col">
+                    
+                    <div className="flex items-start justify-between mb-5">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center transition-transform" style={{ backgroundColor: `${course.color}15` }}>
+                        <BookMarked size={20} style={{ color: course.color }} />
+                      </div>
+                      <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-md">
+                        <Star size={12} className="text-amber-500 fill-amber-500" />
+                        <span className="text-xs font-bold text-amber-700">{course.rating}</span>
+                      </div>
                     </div>
-                    <div className="h-2 bg-[#F0ECE6] rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all" style={{ width: `${course.progress}%`, backgroundColor: course.color }}></div>
+                    
+                    <div className="mb-2">
+                      <span className="text-[11px] font-bold uppercase" style={{ color: course.color }}>{course.category}</span>
                     </div>
-                  </div>
-                )}
+                    <h3 className="font-display font-bold text-lg text-slate-900 mb-4 leading-snug">{course.title}</h3>
+                    
+                    <div className="mt-auto">
+                      {course.progress > 0 && (
+                        <div className="mb-5">
+                          <div className="flex justify-between items-center mb-1.5">
+                            <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">Progress</span>
+                            <span className="text-[11px] font-bold" style={{ color: course.color }}>{course.progress}%</span>
+                          </div>
+                          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full transition-all" style={{ width: `${course.progress}%`, backgroundColor: course.color }}></div>
+                          </div>
+                        </div>
+                      )}
 
-                <div className="flex items-center justify-between border-t border-[#F0ECE6] pt-4">
-                  <div className="flex items-center gap-4 text-brand-muted text-xs font-semibold">
-                    <span className="flex items-center gap-1"><BookMarked size={12} />{course.lessons} lessons</span>
-                    <span className="flex items-center gap-1"><Clock size={12} />{course.duration}</span>
+                      <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+                        <div className="flex items-center gap-3 text-slate-500 text-[13px] font-medium">
+                          <span className="flex items-center gap-1.5"><BookMarked size={14}/>{course.lessons} chapters</span>
+                          <span className="flex items-center gap-1.5"><Clock size={14}/>{course.duration}</span>
+                        </div>
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 text-slate-400 group-hover:bg-brand-blue group-hover:text-white transition-colors">
+                          {course.status === 'completed'
+                            ? <ChevronRight size={16} strokeWidth={2.5} />
+                            : <Play size={12} fill="currentColor" className="ml-0.5" />
+                          }
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center transition-transform group-hover:scale-110" style={{ backgroundColor: `${course.color}22`, color: course.color }}>
-                    {course.status === 'completed'
-                      ? <ChevronRight size={16} strokeWidth={3} />
-                      : <Play size={13} fill="currentColor" />
-                    }
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+                </Link>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
       )}
     </div>
   );

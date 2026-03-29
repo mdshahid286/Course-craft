@@ -1,67 +1,76 @@
-const fs = require('fs');
-const path = require('path');
-
-const DATA_DIR = path.join(__dirname, '..', 'data');
-const memoryStore = new Map();
+const { db } = require('../config/firebase');
 
 class DbService {
-  constructor() {
-    this.ensureDataDir();
-    this.loadAll();
-  }
-
-  ensureDataDir() {
-    if (!fs.existsSync(DATA_DIR)) {
-      try {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-      } catch (err) {
-        console.error('[DB] Could not create data directory:', err.message);
-      }
-    }
-  }
-
-  loadAll() {
-    // Only load from disk once on startup
+  /**
+   * Universal save method. If subCollection is provided, it saves to a nested collection.
+   * Example: save('users', 'uid123', data, 'courses', 'course456')
+   */
+  async save(collection, id, data, subCollection = null, subId = null) {
     try {
-      const files = fs.readdirSync(DATA_DIR);
-      for (const file of files) {
-        if (file.endsWith('.json')) {
-          const col = file.replace('.json', '');
-          const content = fs.readFileSync(path.join(DATA_DIR, file), 'utf-8');
-          memoryStore.set(col, JSON.parse(content));
-        }
+      if (!db) {
+        console.warn(`[DB] Firebase not initialized. Save to ${collection}/${id} skipped.`);
+        return data;
       }
+
+      let ref = db.collection(collection).doc(id);
+      if (subCollection && subId) {
+        ref = ref.collection(subCollection).doc(subId);
+      }
+
+      const payload = { 
+        ...data, 
+        updatedAt: new Date().toISOString() 
+      };
+      
+      await ref.set(payload, { merge: true });
+      return payload;
     } catch (err) {
-      console.warn('[DB] Could not load data from disk, starting fresh.');
+      console.error(`[DB] Save failed:`, err.message);
+      throw err;
     }
   }
 
-  async save(collection, id, data) {
-    if (!memoryStore.has(collection)) memoryStore.set(collection, {});
-    const store = memoryStore.get(collection);
-    store[id] = { ...data, updatedAt: new Date().toISOString() };
-    
-    // Non-blocking save to disk
-    const filePath = path.join(DATA_DIR, `${collection}.json`);
-    fs.writeFile(filePath, JSON.stringify(store, null, 2), (err) => {
-      if (err) console.error(`[DB] Failed to persist ${collection} to disk:`, err.message);
-    });
-    
-    return store[id];
+  async get(collection, id, subCollection = null, subId = null) {
+    try {
+      if (!db) return null;
+      
+      let ref = db.collection(collection).doc(id);
+      if (subCollection && subId) {
+        ref = ref.collection(subCollection).doc(subId);
+      }
+
+      const doc = await ref.get();
+      return doc.exists ? doc.data() : null;
+    } catch (err) {
+      console.error(`[DB] Get failed:`, err.message);
+      return null;
+    }
   }
 
-  async get(collection, id) {
-    const store = memoryStore.get(collection) || {};
-    return store[id] || null;
+  async list(collection, id = null, subCollection = null) {
+    try {
+      if (!db) return [];
+      
+      let ref = db.collection(collection);
+      if (id && subCollection) {
+        ref = ref.doc(id).collection(subCollection);
+      }
+
+      const snapshot = await ref.get();
+      const results = [];
+      snapshot.forEach(doc => {
+        results.push({ id: doc.id, ...doc.data() });
+      });
+      return results;
+    } catch (err) {
+      console.error(`[DB] List failed:`, err.message);
+      return [];
+    }
   }
 
+  // Legacy support for single-collection calls
   async getAll(collection) {
-    return memoryStore.get(collection) || {};
-  }
-
-  async list(collection) {
-    const store = memoryStore.get(collection) || {};
-    return Object.values(store);
+    return this.list(collection);
   }
 }
 
