@@ -1,40 +1,56 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { BarChart, Activity, Clock, Target, ArrowUpRight, Zap, RefreshCcw, FileText, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  BarChart2, Activity, Clock, Target, ArrowUpRight, 
+  Zap, RefreshCcw, FileText, CheckCircle, Cpu, 
+  Terminal, Shield, Layers, Brain
+} from 'lucide-react';
+import { cn } from '../lib/utils';
 
+// MOCKED STATS FROM DB
 const KPIS = [
-  { label: 'Total Learning Hours', value: '42.5h', icon: Clock, trend: '+12% this week', color: 'text-brand-blue', bg: 'bg-blue-50' },
-  { label: 'Courses Completed', value: '8', icon: CheckCircle, trend: '+2 this month', color: 'text-emerald-500', bg: 'bg-emerald-50' },
-  { label: 'Avg. Quiz Score', value: '92%', icon: Target, trend: '+4% improvement', color: 'text-indigo-500', bg: 'bg-indigo-50' },
-  { label: 'Current Streak', value: '14 Days', icon: Zap, trend: 'Personal best!', color: 'text-amber-500', bg: 'bg-amber-50' },
+  { label: 'Neural Activity', value: '142.5h', icon: Brain, trend: '+12% flux', color: 'text-brand-blue', bg: 'bg-brand-blue/10' },
+  { label: 'Units Complete', value: '18', icon: CheckCircle, trend: '+2 logic_cycles', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+  { label: 'Retention Rank', value: '92%', icon: Target, trend: 'S-Tier accuracy', color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
+  { label: 'Uptime Streak', value: '14 Days', icon: Zap, trend: 'Personal_Best!', color: 'text-amber-400', bg: 'bg-amber-500/10' },
 ];
 
-const SKILL_RADAR = [
-  { area: 'Machine Learning', score: 85 },
-  { area: 'Algorithms', score: 60 },
-  { area: 'System Design', score: 90 },
-  { area: 'Mathematics', score: 75 },
-  { area: 'Web3 / Cryptography', score: 40 },
+const SKILL_MAP = [
+  { area: 'Machine Learning', score: 85, latency: '4ms' },
+  { area: 'Algorithms', score: 60, latency: '12ms' },
+  { area: 'System Design', score: 90, latency: '2ms' },
+  { area: 'Mathematics', score: 75, latency: '8ms' },
+  { area: 'Core Protocols', score: 40, latency: '24ms' },
 ];
 
 export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState('Last 30 Days');
 
   return (
-    <div className="px-6 md:px-10 py-8 max-w-7xl mx-auto w-full min-h-screen font-sans">
+    <div className="px-6 md:px-10 py-10 max-w-7xl mx-auto w-full min-h-screen font-sans selection:bg-brand-blue/30 selection:text-white">
       
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+      {/* OS Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8 relative z-10">
         <div>
-          <h1 className="text-3xl md:text-4xl font-display font-bold tracking-tight text-slate-900 mb-2">Learning Analytics</h1>
-          <p className="text-slate-500 font-medium text-lg">AI-driven insights into your study habits and knowledge retention.</p>
+          <div className="inline-flex items-center gap-2 mb-4 px-3 py-1 bg-brand-blue/5 border border-brand-blue/20 rounded-lg text-brand-blue text-[10px] font-mono font-bold uppercase tracking-widest">
+             <Activity size={12} className="animate-pulse" /> Telemetry_V2.0
+          </div>
+          <h1 className="text-4xl md:text-5xl font-display font-black tracking-tighter text-white mb-2 uppercase italic leading-none">
+            Neuro<span className="text-brand-blue">_Insights</span>
+          </h1>
+          <p className="text-zinc-500 font-mono text-[10px] uppercase tracking-[0.2em] font-medium italic">Integrated Cognitive Performance Analysis // Stream_Active</p>
         </div>
-        <div className="flex bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
-          {['Last 7 Days', 'Last 30 Days', 'All Time'].map(range => (
+        
+        <div className="flex bg-black border border-white/10 rounded-xl p-1 shadow-2xl relative group overflow-hidden">
+          <div className="absolute inset-0 bg-brand-blue/5 pointer-events-none group-hover:bg-brand-blue/10 transition-colors" />
+          {['T-7D', 'T-30D', 'T-INF'].map(range => (
             <button
               key={range}
               onClick={() => setTimeRange(range)}
-              className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${timeRange === range ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}
+              className={cn(
+                "px-5 py-2.5 text-[10px] font-mono font-black uppercase tracking-widest rounded-lg transition-all relative z-10",
+                timeRange === range ? 'bg-brand-blue text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'text-zinc-600 hover:text-white'
+              )}
             >
               {range}
             </button>
@@ -42,144 +58,164 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* KPIs Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      {/* KPI Matrix */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12 relative z-10">
         {KPIS.map((kpi, i) => {
           const Icon = kpi.icon;
           return (
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: i * 0.1 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.1 }}
               key={kpi.label}
-              className="bg-white border border-slate-200 p-6 rounded-[2rem] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group"
+              className="tech-card h-full p-8 flex flex-col justify-between group overflow-hidden"
             >
-              <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full ${kpi.bg} opacity-50 group-hover:scale-150 transition-transform duration-700 pointer-events-none blur-[20px]`}></div>
+              <div className={cn("absolute -right-4 -top-4 w-28 h-28 rounded-full opacity-0 group-hover:opacity-10 shadow-[0_0_40px_currentColor] blur-[30px] transition-all duration-700 pointer-events-none", kpi.color)} />
               
-              <div className="flex items-center justify-between mb-4 relative z-10">
-                <div className={`w-12 h-12 rounded-[1rem] flex items-center justify-center border border-white/50 shadow-sm ${kpi.bg} ${kpi.color}`}>
-                  <Icon size={24} strokeWidth={2.5} />
+              <div className="flex items-start justify-between mb-8 relative z-10">
+                <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center border border-white/5 shadow-inner transition-transform group-hover:scale-110", kpi.bg, kpi.color)}>
+                  <Icon size={28} strokeWidth={2.5} />
                 </div>
                 <div className="text-right">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{kpi.label}</span>
+                   <div className="text-[10px] font-mono font-bold text-zinc-600 uppercase tracking-widest">{kpi.label}</div>
+                   <div className="text-[9px] font-mono font-bold text-zinc-700 uppercase tracking-tighter mt-1">S_BLOCK_ID_{100 + i}</div>
                 </div>
               </div>
               
-              <div className="relative z-10">
-                <h3 className="font-display font-black text-3xl text-slate-900 mb-2">{kpi.value}</h3>
-                <p className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 w-fit px-2 py-1 rounded-md border border-emerald-100">
-                  <ArrowUpRight size={14} /> {kpi.trend}
-                </p>
+              <div className="relative z-10 mt-auto">
+                <h3 className="font-display font-black text-4xl text-white mb-3 tracking-tighter group-hover:text-glow transition-all">{kpi.value}</h3>
+                <div className="flex items-center gap-2 text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-[0.1em] bg-emerald-500/5 border border-emerald-500/10 px-3 py-1.5 rounded-lg w-fit group-hover:bg-emerald-500/10 transition-colors">
+                  <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" /> {kpi.trend}
+                </div>
               </div>
             </motion.div>
           );
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 relative z-10">
         
-        {/* Main Chart Area (Mocked with CSS bars) */}
-        <div className="lg:col-span-2 space-y-8">
+        {/* Activity Stream Visualizer */}
+        <div className="lg:col-span-2 space-y-10">
           
-          <div className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm">
-            <div className="flex items-center justify-between mb-10">
-              <h3 className="font-display font-bold text-xl text-slate-900 flex items-center gap-2">
-                <Activity className="text-brand-blue" /> Study Activity
-              </h3>
-              <button className="text-slate-400 hover:text-slate-900 transition-colors"><RefreshCcw size={18} /></button>
-            </div>
-            
-            <div className="h-64 flex items-end gap-2 md:gap-4 relative pt-10">
-              <div className="absolute top-0 left-0 w-full flex flex-col justify-between h-full pointer-events-none opacity-20">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="border-t border-slate-400 w-full"></div>
-                ))}
-              </div>
-              
-              {/* Fake Data Bars */}
-              {[40, 60, 30, 80, 50, 95, 70, 85, 45, 60].map((h, i) => (
-                <div key={i} className="flex-1 flex flex-col justify-end items-center group relative z-10">
-                   <div 
-                     className="w-full bg-brand-blue rounded-t-xl transition-all duration-1000 group-hover:bg-indigo-500 cursor-pointer shadow-[inset_0_2px_10px_rgba(255,255,255,0.2)] relative overflow-hidden" 
-                     style={{ height: `${h}%` }}
-                   >
-                     <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
-                   </div>
-                   <div className="text-[10px] text-slate-400 font-bold mt-4 uppercase tracking-widest text-center rotate-45 md:rotate-0 origin-left max-w-full overflow-hidden text-ellipsis whitespace-nowrap">
-                     Day {i + 1}
-                   </div>
-                   
-                   {/* Tooltip */}
-                   <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-xl pointer-events-none whitespace-nowrap">
-                      {h} Mins
-                   </div>
+          <div className="tech-card p-10 bg-black/40 backdrop-blur-xl group">
+             <div className="absolute inset-0 bg-grid-white opacity-[0.02] pointer-events-none" />
+             <div className="flex items-center justify-between mb-12 relative z-10">
+                <div>
+                   <h3 className="text-2xl font-display font-black text-white italic tracking-tighter uppercase mb-1 flex items-center gap-3">
+                      <Activity className="text-brand-blue" /> Study_Power_Output
+                   </h3>
+                   <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest italic">Temporal Activity Monitoring // 48Hz Sampling</span>
                 </div>
-              ))}
-            </div>
+                <div className="flex gap-2">
+                   <button className="p-3 bg-zinc-900 border border-white/5 rounded-xl text-zinc-500 hover:text-white transition-colors group-hover:border-brand-blue/30"><RefreshCcw size={16} /></button>
+                </div>
+             </div>
+             
+             <div className="h-72 flex items-end gap-3 md:gap-5 relative pt-12">
+                <div className="absolute top-0 left-0 w-full flex flex-col justify-between h-56 pointer-events-none opacity-[0.05]">
+                   {[...Array(5)].map((_, i) => (
+                     <div key={i} className="border-t border-white w-full"></div>
+                   ))}
+                </div>
+                
+                {/* Visualizer Bars */}
+                {[45, 65, 35, 85, 55, 98, 75, 88, 50, 68].map((h, i) => (
+                   <div key={i} className="flex-1 flex flex-col justify-end items-center group/bar relative z-10">
+                      <div className="absolute -top-12 opacity-0 group-hover/bar:opacity-100 transition-all scale-75 group-hover/bar:scale-100 bg-brand-blue text-white text-[10px] font-mono font-black italic px-3 py-1.5 rounded-lg shadow-[0_0_20px_rgba(59,130,246,0.5)] pointer-events-none whitespace-nowrap z-20">
+                         {h}MW_PWR
+                      </div>
+                      
+                      <div className="w-full relative group-hover/bar:scale-x-110 transition-transform cursor-crosshair">
+                         <motion.div 
+                           initial={{ height: 0 }}
+                           animate={{ height: `${h}%` }}
+                           transition={{ duration: 1, delay: i * 0.05, ease: "circOut" }}
+                           className="bg-brand-blue/10 border-t border-x border-brand-blue/40 rounded-t-lg relative overflow-hidden group-hover/bar:bg-brand-blue group-hover/bar:border-brand-blue shadow-[0_0_30px_rgba(59,130,246,0.1)] transition-all duration-300"
+                         >
+                            <div className="absolute inset-0 bg-gradient-to-t from-brand-blue/20 via-transparent to-white/20 opacity-40"></div>
+                            <div className="absolute top-0 left-0 w-full h-px bg-white/40 shadow-[0_0_10px_white]"></div>
+                         </motion.div>
+                      </div>
+                      
+                      <div className="text-[8px] font-mono font-black text-zinc-700 group-hover/bar:text-brand-blue transition-colors mt-6 uppercase tracking-widest rotate-[-45deg] md:rotate-0">
+                         ID_{i + 1}
+                      </div>
+                   </div>
+                ))}
+             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm relative overflow-hidden">
+          <div className="tech-card bg-indigo-500/5 group border-indigo-500/20">
+             <div className="absolute right-0 bottom-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity"><Brain size={160} className="text-indigo-400" /></div>
              
-             <div className="absolute right-0 top-0 w-1/3 h-full bg-gradient-to-l from-amber-50 to-transparent pointer-events-none"></div>
-             
-             <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
-               <div className="w-24 h-24 bg-amber-100 rounded-[2rem] flex items-center justify-center flex-shrink-0 border border-amber-200 shadow-sm shadow-amber-100">
-                 <Sparkles size={40} className="text-amber-500" />
-               </div>
-               <div>
-                 <h3 className="font-display font-bold text-2xl text-slate-900 mb-3 tracking-tight">AI Knowledge Gap Analysis</h3>
-                 <p className="text-slate-600 mb-5 leading-relaxed text-sm">Based on your recent quizzes, our AI has identified a drop in retention regarding <span className="font-bold text-slate-900 bg-amber-100 px-1.5 py-0.5 rounded">Asymmetric Cryptography</span>. We recommend generating a targeted refresher module.</p>
-                 <button className="bg-slate-900 hover:bg-black text-white font-bold py-3 px-6 rounded-xl text-sm transition-all shadow-[0_4px_14px_rgba(0,0,0,0.1)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] flex items-center gap-2">
-                   Generate Refresher <ArrowUpRight size={16} />
-                 </button>
-               </div>
+             <div className="relative z-10 flex flex-col md:flex-row gap-10 items-center">
+                <div className="w-24 h-24 bg-indigo-500/10 border border-indigo-500/20 rounded-3xl flex items-center justify-center flex-shrink-0 shadow-[0_0_30px_rgba(99,102,241,0.2)] group-hover:scale-105 transition-transform duration-500">
+                   <Layers size={40} className="text-indigo-400 animate-glow-pulse" />
+                </div>
+                <div className="flex-1">
+                   <h3 className="text-3xl font-display font-black text-white italic tracking-tighter uppercase mb-4 flex items-center gap-3 underline decoration-indigo-500/30 underline-offset-8 decoration-4">Knowledge_Gap_Report</h3>
+                   <p className="text-zinc-500 font-mono text-[11px] mb-8 leading-relaxed max-w-2xl">
+                      {"> "}Heuristic analysis detected a coherence drop in <span className="text-white px-2 py-0.5 bg-indigo-500/20 border border-indigo-500/30 rounded italic font-bold tracking-tight">Asymmetric_Logic_Flow</span>. 
+                      Predictive score: 54%. Generating remediative logic recommended.
+                   </p>
+                   <button className="bg-white hover:bg-zinc-200 text-black font-black py-4 px-10 rounded-2xl text-[11px] uppercase tracking-tighter transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center gap-3 italic group">
+                      Initialize_Refresher <ArrowUpRight size={18} className="group-hover:translate-x-1" />
+                   </button>
+                </div>
              </div>
           </div>
 
         </div>
 
-        {/* Sidebar Analytics */}
-        <aside className="space-y-8">
-           
-           <div className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-sm">
-             <h3 className="font-display font-bold text-xl text-slate-900 mb-8 flex items-center gap-2">
-                <Target className="text-rose-500" /> Skill Distribution
-             </h3>
-             
-             <div className="space-y-6">
-                {SKILL_RADAR.map(skill => (
-                  <div key={skill.area}>
-                    <div className="flex justify-between items-end mb-2">
-                      <span className="text-sm font-bold text-slate-700">{skill.area}</span>
-                      <span className="text-xs font-bold text-slate-400">{skill.score}% proficiency</span>
-                    </div>
-                    <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-                       <motion.div 
-                         initial={{ width: 0 }}
-                         animate={{ width: `${skill.score}%` }}
-                         transition={{ duration: 1, ease: 'easeOut' }}
-                         className={`h-full rounded-full ${skill.score < 50 ? 'bg-rose-500' : skill.score < 80 ? 'bg-amber-500' : 'bg-brand-blue shadow-[inset_0_2px_5px_rgba(255,255,255,0.3)]'}`}
-                       ></motion.div>
-                    </div>
-                  </div>
-                ))}
-             </div>
+        {/* Tactical Intel Cluster */}
+        <aside className="space-y-10 relative">
+           <div className="tech-card border-brand-blue/20">
+              <h3 className="text-xl font-display font-black text-white italic tracking-tighter uppercase mb-10 flex items-center gap-3">
+                 <Shield size={20} className="text-brand-blue" /> Proficiency_Matrix
+              </h3>
+              
+              <div className="space-y-8 relative z-10">
+                 {SKILL_MAP.map(skill => (
+                   <div key={skill.area} className="group/item">
+                     <div className="flex justify-between items-end mb-3">
+                        <div className="flex flex-col">
+                           <span className="text-[11px] font-black text-zinc-300 uppercase italic tracking-tighter group-hover/item:text-brand-blue transition-colors">{skill.area}</span>
+                           <span className="text-[8px] font-mono text-zinc-600 uppercase tracking-widest mt-0.5">LATENCY: {skill.latency}</span>
+                        </div>
+                        <span className="text-[10px] font-mono font-black text-brand-blue">{skill.score}%</span>
+                     </div>
+                     <div className="w-full h-1.5 bg-zinc-900 border border-white/5 rounded-full overflow-hidden">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${skill.score}%` }}
+                          transition={{ duration: 1.2, ease: "backOut" }}
+                          className={cn(
+                             "h-full rounded-full transition-all shadow-[0_0_10px_currentColor]",
+                             skill.score < 50 ? 'bg-rose-500 text-rose-500' : skill.score < 80 ? 'bg-amber-400 text-amber-400' : 'bg-brand-blue text-brand-blue'
+                          )}
+                        />
+                     </div>
+                   </div>
+                 ))}
+              </div>
            </div>
 
-           <div className="bg-gradient-to-br from-brand-blue to-indigo-600 rounded-[2rem] p-8 shadow-lg text-white border border-white/10 relative overflow-hidden">
-             
-             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-[60px] pointer-events-none"></div>
-             
-             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-6 backdrop-blur-md border border-white/20">
-               <FileText size={24} className="text-white" />
-             </div>
-             
-             <h3 className="font-display font-bold text-2xl mb-3 tracking-tight text-white drop-shadow-sm">Export Detailed Report</h3>
-             <p className="text-blue-100 text-sm mb-8 leading-relaxed font-medium">Download a comprehensive PDF outlining your learning milestones, quiz transcripts, and generated curriculum.</p>
-             
-             <button className="w-full bg-white hover:bg-slate-50 text-brand-blue font-black py-4 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all uppercase tracking-widest text-[13px]">
-               Download PDF
-             </button>
+           <div className="tech-card bg-brand-blue group border-white/10 shadow-[0_30px_60px_rgba(59,130,246,0.3)]">
+              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-25 transition-opacity duration-1000 rotate-12 scale-150"><Terminal size={140} className="text-white" /></div>
+              
+              <div className="relative z-10">
+                <div className="w-12 h-12 bg-white/20 border border-white/30 rounded-xl flex items-center justify-center mb-8 backdrop-blur-xl shadow-inner">
+                   <FileText size={24} className="text-white fill-white/10" />
+                </div>
+                
+                <h3 className="text-2xl font-display font-black text-white italic tracking-tighter uppercase mb-4 leading-tight">Manifest_Generator</h3>
+                <p className="text-blue-100/60 font-mono text-[10px] uppercase tracking-widest mb-10 leading-relaxed font-bold">Transmit cognitive records and generated syllabi to persistent PDF format.</p>
+                
+                <button className="w-full bg-white hover:bg-zinc-100 text-black font-black py-4 rounded-xl shadow-2xl transition-all uppercase tracking-widest text-[11px] italic group flex items-center justify-center gap-3">
+                   SECURE_EXPORT <Cpu size={16} className="group-hover:rotate-180 transition-transform duration-700" />
+                </button>
+              </div>
            </div>
         </aside>
 

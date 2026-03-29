@@ -1,115 +1,125 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
-  Car, Home, BookOpen, Users, BarChart2, Settings, 
-  Bell, User, Code, Layers
+  Rocket, 
+  LayoutDashboard, 
+  Library, 
+  Users, 
+  BarChart2, 
+  Settings, 
+  PlusCircle, 
+  LogOut,
+  ChevronRight,
+  Terminal,
+  Activity,
+  Cpu
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { motion } from 'framer-motion';
+import { cn } from '../lib/utils';
 
-// Inline Sparkles Icon to guarantee it works
-const SparklesIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>
-);
+const MENU_ITEMS = [
+  { path: '/dashboard', label: 'Dashboard_OS', icon: LayoutDashboard },
+  { path: '/courses', label: 'Library_Grid', icon: Library },
+  { path: '/build', label: 'System_Build', icon: PlusCircle },
+  { path: '/community', label: 'Creator_Hall', icon: Users },
+  { path: '/analytics', label: 'Neuro_Insights', icon: BarChart2 },
+  { path: '/settings', label: 'Core_Configs', icon: Settings },
+];
 
 export default function Layout({ children }) {
   const { pathname } = useLocation();
-  const { currentUser } = useAuth();
-  
-  return (
-    <div className="flex h-screen w-full bg-[#FAFAFA] overflow-hidden selection:bg-brand-blue selection:text-white font-sans text-slate-900">
-      
-      {/* Sidebar - Clean, Bright, Professional Modern UI */}
-      <aside className="w-[280px] flex-shrink-0 bg-white flex flex-col pt-8 pb-6 px-5 z-20 hidden md:flex border-r border-slate-200 relative">
+  const { logout } = useAuth();
 
-        {/* Logo Area */}
-        <div className="flex flex-col mb-10 pl-2">
-          <Link to="/dashboard" className="flex items-center gap-3 group w-fit">
-            <div className="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center shadow-sm relative overflow-hidden transition-all group-hover:scale-105 group-hover:shadow-md">
-              <Car size={22} className="text-white relative z-10" />
-            </div>
-            <span className="text-2xl font-display font-bold tracking-tight text-slate-900">
-              CourseCraft
+  return (
+    <div className="flex h-screen bg-[#09090B] text-foreground font-sans overflow-hidden">
+      
+      {/* Space Backdrop inside Layout */}
+      <div className="fixed inset-0 z-0 pointer-events-none opacity-20 bg-grid-white" />
+
+      {/* Sidebar - Robotic/Vertical Tech Style */}
+      <aside className="w-72 bg-black border-r border-[#27272A] p-6 flex flex-col z-20 relative">
+        <div className="flex items-center gap-3 mb-10 px-2 group cursor-pointer">
+          <div className="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.5)] group-hover:scale-110 transition-transform">
+            <Rocket size={18} className="text-white fill-white/20" />
+          </div>
+          <div>
+            <span className="text-xl font-display font-black tracking-tighter text-white uppercase italic group-hover:text-brand-blue transition-colors">
+              Orbit<span className="text-brand-blue font-bold not-italic">Engine</span>
             </span>
-          </Link>
+            <div className="flex items-center gap-1.5 text-[8px] font-mono text-zinc-600 uppercase tracking-widest mt-0.5">
+               <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+               V2.0_Core_Operational
+            </div>
+          </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1 relative z-10">
-          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4 pl-2">Overview</div>
-          
-          {[{ path: '/dashboard', icon: Home, label: 'Dashboard' },
-            { path: '/courses', icon: BookOpen, label: 'My Courses' },
-            { path: '/community', icon: Users, label: 'Community' },
-            { path: '/analytics', icon: BarChart2, label: 'Analytics' },
-          ].map((item) => {
-            const isActive = pathname === item.path || (pathname.startsWith(item.path) && item.path !== '/dashboard');
-            const NavIcon = item.icon;
-            
+        <div className="flex-1 space-y-1">
+          {MENU_ITEMS.map((item) => {
+            const isActive = pathname === item.path;
+            const Icon = item.icon;
             return (
-              <Link 
-                key={item.path} 
-                to={item.path} 
-                className={`relative flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-all group ${
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  "group flex items-center gap-3 px-4 py-3.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all relative overflow-hidden italic",
                   isActive 
-                    ? 'text-brand-blue bg-blue-50/80 shadow-sm' 
-                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-                }`}
+                    ? "bg-brand-blue text-white shadow-[0_4px_15px_rgba(59,130,246,0.3)]" 
+                    : "text-zinc-500 hover:text-white hover:bg-white/5"
+                )}
               >
-                <NavIcon size={18} className={isActive ? "text-brand-blue" : "text-slate-400 group-hover:text-slate-600 transition-colors"} strokeWidth={isActive ? 2.5 : 2} />
-                <span className="text-[15px]">{item.label}</span>
+                {isActive && (
+                  <motion.div 
+                    layoutId="activeNav"
+                    className="absolute inset-0 bg-brand-blue -z-10"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+                <Icon size={16} className={cn(isActive ? "text-white" : "text-zinc-600 group-hover:text-brand-blue transition-colors")} />
+                {item.label}
+                {isActive && <ChevronRight size={14} className="ml-auto opacity-50" />}
               </Link>
             );
           })}
+        </div>
 
-          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-8 mb-4 pl-2">Account</div>
-          <Link to="/settings" className={`relative flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-all group ${pathname.startsWith('/settings') ? 'text-brand-blue bg-blue-50/80 shadow-sm' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}>
-             <Settings size={18} className={pathname.startsWith('/settings') ? "text-brand-blue" : "text-slate-400"} strokeWidth={pathname.startsWith('/settings') ? 2.5 : 2} />
-             <span className="text-[15px]">Settings</span>
-          </Link>
-
-        </nav>
-
-        {/* Create New Button */}
-        <div className="mt-auto relative z-10 pt-4">
-          <Link to="/build" className="w-full flex items-center justify-center gap-2 py-3.5 bg-slate-900 hover:bg-black text-white rounded-xl shadow-[0_4px_14px_rgba(0,0,0,0.1)] transition-all hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] hover:-translate-y-0.5 font-semibold text-sm">
-            <SparklesIcon /> Create New
-          </Link>
+        {/* User Status Widget */}
+        <div className="mt-8 p-6 bg-[#121214] border border-[#27272A] rounded-2xl relative overflow-hidden group">
+           <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-30 transition-opacity"><Activity size={24} className="text-brand-blue" /></div>
+           <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-brand-blue/10 border border-brand-blue/20 flex items-center justify-center">
+                 <Cpu size={18} className="text-brand-blue" />
+              </div>
+              <div>
+                 <p className="text-[10px] font-mono font-bold text-zinc-500 uppercase">Unit_ID</p>
+                 <p className="text-xs font-black tracking-tight uppercase">User_Core</p>
+              </div>
+           </div>
+           
+           <button 
+             onClick={logout}
+             className="w-full flex items-center justify-center gap-2 py-3 bg-red-500/5 hover:bg-red-500/10 text-red-500/80 hover:text-red-400 border border-red-500/10 rounded-xl text-[10px] font-mono font-bold uppercase transition-all"
+           >
+             <LogOut size={14} /> Terminate_Session
+           </button>
         </div>
       </aside>
 
-      {/* Main Content Wrapper */}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar relative min-h-0 flex flex-col bg-[#FAFAFA]">
-        
-        {/* Top Header */}
-        <header className="sticky top-0 z-30 bg-[#FAFAFA]/80 backdrop-blur-xl px-8 py-5 flex items-center justify-between border-b border-slate-200/60">
-          <div className="flex md:hidden items-center text-slate-900">
-            <Link to="/dashboard"><div className="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center"><Car size={20} className="text-white"/></div></Link>
-          </div>
-          
-          <div className="hidden md:flex font-display font-medium text-lg text-slate-400">
-             <div className="flex items-center gap-2 bg-white border border-slate-200 px-3 py-1.5 rounded-lg text-sm shadow-sm">
-                <Layers size={14} className="text-brand-blue"/> <span className="text-slate-700 font-semibold">Workspace</span>
-             </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <button className="relative w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-all shadow-sm">
-              <Bell size={18} />
-              <div className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>
-            </button>
-            <Link to="/settings" className="w-10 h-10 rounded-full bg-indigo-100 overflow-hidden flex items-center justify-center cursor-pointer border border-indigo-200 hover:scale-105 transition-transform text-indigo-700">
-              {currentUser?.email ? (
-                <span className="font-bold text-sm">{currentUser.email.charAt(0).toUpperCase()}</span>
-              ) : (
-                <User size={18} />
-              )}
-            </Link>
-          </div>
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto no-scrollbar bg-background relative z-10 custom-scrollbar">
+        {/* Top Floating Stats Bar */}
+        <header className="fixed top-0 right-0 left-72 h-14 bg-black/40 backdrop-blur-xl border-b border-white/5 flex items-center px-10 justify-between z-30">
+           <div className="flex items-center gap-6 font-mono text-[9px] text-zinc-500 uppercase tracking-widest">
+              <span className="flex items-center gap-2"><div className="w-1 h-1 bg-brand-blue rounded-full shadow-[0_0_8px_rgba(59,130,246,0.8)]" /> Stream_Active: 1.2 GB/s</span>
+              <span className="flex items-center gap-2"><div className="w-1 h-1 bg-indigo-500 rounded-full" /> Render_Clock: 4.2 GHZ</span>
+           </div>
+           
+           <div className="w-8 h-8 rounded-full bg-zinc-900 border border-white/5 flex items-center justify-center group cursor-pointer hover:border-brand-blue transition-colors">
+              <Terminal size={14} className="text-zinc-600 group-hover:text-brand-blue" />
+           </div>
         </header>
 
-        {/* Page Content */}
-        <div className="flex-1 relative z-10 py-8">
+        <div className="pt-20">
           {children}
         </div>
       </main>

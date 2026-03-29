@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,11 +6,52 @@
 
 @layer base {
   body {
-    @apply bg-background text-brand-text font-sans antialiased;
+    @apply bg-background text-foreground font-sans antialiased selection:bg-brand-blue/30 selection:text-white;
+    background-image: 
+      radial-gradient(circle at 50% 50%, rgba(24, 24, 27, 0.5) 0%, transparent 100%),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2327272a' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display font-bold;
+    @apply font-display font-bold tracking-tight;
+  }
+}
+
+@layer components {
+  .tech-card {
+    @apply bg-[#121214] border border-[#27272A] rounded-2xl p-6 transition-all duration-300 hover:border-brand-blue/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.1)];
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tech-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.06), transparent 40%);
+    opacity: 0;
+    transition: opacity 0.5s;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .tech-card:hover::after {
+    opacity: 1;
+  }
+
+  .glass-panel {
+    @apply bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl;
+  }
+
+  .btn-primary {
+    @apply bg-brand-blue hover:bg-brand-darkBlue text-white font-bold py-3 px-8 rounded-xl transition-all shadow-[0_4px_14px_rgba(59,130,246,0.35)] hover:-translate-y-0.5 active:scale-95 disabled:opacity-50;
+  }
+
+  .input-field {
+    @apply w-full bg-[#18181B] border border-[#27272A] outline-none rounded-xl px-5 py-3.5 font-medium text-white focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue/50 transition-all placeholder:text-zinc-500;
   }
 }
 
@@ -21,5 +62,16 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+  }
+
+  .bg-grid-white {
+    background-size: 30px 30px;
+    background-image: 
+      linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
   }
 }

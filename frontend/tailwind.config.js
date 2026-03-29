@@ -10,39 +10,50 @@ export default {
   theme: {
   	extend: {
   		colors: {
-  			background: '#FCF9F2',
-  			foreground: '#2C2B29',
-  			sidebar: '#F2EDE4',
+  			background: '#09090B',
+  			foreground: '#FAFAFA',
+  			sidebar: '#000000',
         brand: {
-          blue: '#1681D0',
-          darkBlue: '#05537B',
-          peach: '#FEE5D4',
-          tan: '#EFEAE1',
-          orange: '#FF8A65',
-          yellow: '#FFCA28',
-          text: '#1B1B1B',
-          muted: '#8A8883'
+          blue: '#3B82F6',
+          darkBlue: '#1D4ED8',
+          text: '#FAFAFA',
+          muted: '#A1A1AA'
         },
   			card: {
-  				DEFAULT: '#FFFFFF',
-  				foreground: '#1B1B1B'
+  				DEFAULT: '#18181B',
+  				foreground: '#FAFAFA'
   			},
-  			border: '#E8E4DB',
-  			input: '#E8E4DB',
-  			ring: '#1681D0',
+  			border: '#27272A',
+  			input: '#27272A',
+  			ring: '#3B82F6',
   		},
   		borderRadius: {
-  			'3xl': '1.5rem',
-        '4xl': '2rem',
-        '5xl': '2.5rem',
-        '6xl': '3rem',
-  			lg: '1rem',
-  			md: '0.75rem',
-  			sm: '0.5rem'
+  			'3xl': '1rem',
+        '4xl': '1.5rem',
+        '5xl': '2rem',
+        '6xl': '2.5rem',
+  			lg: '0.75rem',
+  			md: '0.5rem',
+  			sm: '0.25rem'
   		},
       fontFamily: {
         sans: ['Plus Jakarta Sans', 'sans-serif'],
         display: ['Outfit', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      },
+      animation: {
+        'glow-pulse': 'glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'orbit': 'orbit 20s linear infinite',
+      },
+      keyframes: {
+        glow: {
+          '0%, 100%': { opacity: 1, filter: 'brightness(1)' },
+          '50%': { opacity: 0.8, filter: 'brightness(1.5)' },
+        },
+        orbit: {
+          from: { transform: 'rotate(0deg) translateX(100px) rotate(0deg)' },
+          to: { transform: 'rotate(360deg) translateX(100px) rotate(-360deg)' },
+        }
       }
   	}
   },
