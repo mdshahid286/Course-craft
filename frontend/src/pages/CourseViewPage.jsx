@@ -8,10 +8,12 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { getCourse } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
 
 export default function CourseViewPage() {
   const { courseId } = useParams();
+  const { currentUser } = useAuth();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeModule, setActiveModule] = useState(0);
@@ -21,7 +23,7 @@ export default function CourseViewPage() {
   useEffect(() => {
     async function fetch() {
       try {
-        const data = await getCourse(courseId);
+        const data = await getCourse(courseId, currentUser?.uid);
         setCourse(data);
       } catch (e) { console.error(e); }
       finally { setLoading(false); }

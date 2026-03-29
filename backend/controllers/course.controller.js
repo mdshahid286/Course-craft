@@ -70,7 +70,20 @@ exports.createCourse = async (req, res) => {
 exports.getCourse = async (req, res) => {
   try {
     const courseId = req.params.id;
-    const course = await db.get('courses', courseId);
+    const userId = req.query.userId;
+    
+    let course = null;
+    
+    // 1. Try to get from user collection if userId is provided
+    if (userId && userId !== "null" && userId !== "undefined") {
+      course = await db.get('users', userId, 'courses', courseId);
+    }
+    
+    // 2. Fallback: try top-level courses collection
+    if (!course) {
+      course = await db.get('courses', courseId);
+    }
+    
     if (!course) return res.status(404).json({ error: 'Course not found' });
     res.status(200).json(course);
   } catch (error) {

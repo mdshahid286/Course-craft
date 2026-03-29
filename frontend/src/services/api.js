@@ -24,8 +24,9 @@ export async function createCourse(topic, difficulty = 'Beginner', userId = null
 }
 
 /** Returns full course object from the server. */
-export async function getCourse(courseId) {
-  return request('GET', `/course/${courseId}`);
+export async function getCourse(courseId, userId = null) {
+  const url = userId ? `/course/${courseId}?userId=${userId}` : `/course/${courseId}`;
+  return request('GET', url);
 }
 
 /** Returns list of generated courses. */
