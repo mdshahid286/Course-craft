@@ -34,12 +34,19 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function fetch() {
-      if (!currentUser) return;
+      console.log('DashboardPage Debug - currentUser:', currentUser);
+      if (!currentUser) {
+        console.log('DashboardPage Debug - No current user, returning');
+        setLoading(false);
+        return;
+      }
       try {
+        console.log('DashboardPage Debug - Fetching courses for user:', currentUser.uid);
         const all = await listUserCourses(currentUser.uid);
+        console.log('DashboardPage Debug - Courses fetched:', all);
         setCourses(all.slice(0, 3));
       } catch (e) {
-        console.error(e);
+        console.error('DashboardPage Debug - Error fetching courses:', e);
       } finally {
         setLoading(false);
       }

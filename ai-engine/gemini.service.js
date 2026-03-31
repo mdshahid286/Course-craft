@@ -14,6 +14,183 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/**
+ * Generates mock course data for development when Gemini API is not available
+ */
+function generateMockData(prompt) {
+    console.log('[Gemini] Generating mock course data...');
+    
+    // Extract topic from prompt if possible
+    const topicMatch = prompt.match(/Topic:\s*"([^"]+)"/);
+    const topic = topicMatch ? topicMatch[1] : 'Web Development';
+    
+    // Extract difficulty from prompt if possible
+    const difficultyMatch = prompt.match(/Difficulty:\s*"([^"]+)"/);
+    const difficulty = difficultyMatch ? difficultyMatch[1] : 'Beginner';
+    
+    const mockCourse = {
+        title: `Introduction to ${topic}`,
+        description: `A comprehensive ${difficulty.toLowerCase()} course covering the fundamentals of ${topic}. Learn the essential concepts, best practices, and practical skills needed to master this subject.`,
+        learning_objectives: [
+            `Understand the core concepts of ${topic}`,
+            `Apply practical skills through hands-on exercises`,
+            `Build real-world projects to demonstrate your knowledge`,
+            `Develop problem-solving abilities in ${topic}`
+        ],
+        modules: [
+            {
+                id: 'module-1',
+                title: 'Getting Started',
+                description: 'Learn the basics and set up your environment',
+                lessons: [
+                    {
+                        id: 'lesson-1-1',
+                        title: 'What is ' + topic + '?',
+                        objective: 'Understand what ' + topic + ' is and why it matters',
+                        duration: '15 min',
+                        content: {
+                            explanation: `# Introduction to ${topic}\n\n${topic} is a fundamental concept in modern technology. This lesson covers the basic principles and foundations that every learner should understand.\n\n## Key Concepts\n\n- **Core Principles**: The fundamental building blocks of ${topic}\n- **Applications**: Real-world uses and examples\n- **Best Practices**: Industry standards and guidelines\n\n## Practical Examples\n\nLearn through hands-on examples that demonstrate the practical application of ${topic} in real scenarios.`,
+                            key_concepts: [
+                                { term: 'Fundamentals', definition: 'The basic principles that form the foundation' },
+                                { term: 'Applications', definition: 'Practical uses in real-world scenarios' },
+                                { term: 'Best Practices', definition: 'Industry-standard approaches and methods' }
+                            ],
+                            examples: [
+                                'Basic implementation example',
+                                'Common use case demonstration',
+                                'Industry application scenario'
+                            ],
+                            takeaway: `${topic} provides essential tools and concepts for modern development.`,
+                            visual_suggestions: [
+                                'Conceptual diagram showing relationships',
+                                'Flowchart of basic processes',
+                                'Comparison chart of different approaches'
+                            ]
+                        },
+                        videoScript: {
+                            title: `${topic} Fundamentals`,
+                            scenes: [
+                                { type: 'text', narration: `Welcome to our introduction to ${topic}. In this lesson, we'll explore the fundamental concepts that form the foundation of this important subject.` },
+                                { type: 'diagram_process_threads', narration: 'Lets visualize how the different components work together in a typical system architecture.' },
+                                { type: 'real_world_car_speed', narration: 'Finally, well see how these concepts apply in real-world scenarios with practical examples.' }
+                            ]
+                        }
+                    },
+                    {
+                        id: 'lesson-1-2',
+                        title: 'Setting Up Your Environment',
+                        objective: 'Configure your development environment for ' + topic,
+                        duration: '20 min',
+                        content: {
+                            explanation: `# Environment Setup for ${topic}\n\nSetting up a proper development environment is crucial for success. This lesson guides you through the essential tools and configurations.\n\n## Required Tools\n\n- **Development Environment**: Setting up your workspace\n- **Essential Tools**: Must-have software and utilities\n- **Configuration**: Proper settings for optimal performance\n\n## Step-by-Step Guide\n\nFollow along as we set up everything you need to start working with ${topic} effectively.`,
+                            key_concepts: [
+                                { term: 'Development Environment', definition: 'The setup of tools and software needed for development' },
+                                { term: 'Configuration', definition: 'Settings and parameters for optimal performance' },
+                                { term: 'Best Practices', definition: 'Recommended setup procedures' }
+                            ],
+                            examples: [
+                                'Installation walkthrough',
+                                'Configuration examples',
+                                'Troubleshooting common issues'
+                            ],
+                            takeaway: 'A properly configured environment sets you up for success.',
+                            visual_suggestions: [
+                                'Installation flowchart',
+                                'Configuration diagram',
+                                'Tool comparison table'
+                            ]
+                        },
+                        videoScript: {
+                            title: 'Environment Setup',
+                            scenes: [
+                                { type: 'text', narration: 'Lets set up your development environment step by step, starting with the essential tools youll need.' },
+                                { type: 'diagram_process_threads', narration: 'Heres a visual guide showing how all the components connect and work together in your development setup.' },
+                                { type: 'real_world_car_speed', narration: 'Well finish with a practical demonstration of the complete setup in action.' }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                id: 'module-2',
+                title: 'Core Concepts',
+                description: 'Master the fundamental concepts and principles',
+                lessons: [
+                    {
+                        id: 'lesson-2-1',
+                        title: 'Essential Principles',
+                        objective: 'Master the core principles of ' + topic,
+                        duration: '25 min',
+                        content: {
+                            explanation: `# Core Principles of ${topic}\n\nBuilding on the fundamentals, this lesson dives deeper into the essential principles that govern ${topic}. Understanding these concepts is crucial for mastery.\n\n## Advanced Concepts\n\n- **Principle 1**: Detailed explanation of the first core principle\n- **Principle 2**: Understanding the second fundamental concept\n- **Principle 3**: Mastering the third essential element\n\n## Practical Applications\n\nApply these principles through guided exercises and real-world examples that demonstrate their importance and usage.`,
+                            key_concepts: [
+                                { term: 'Core Principles', definition: 'The fundamental rules and concepts that govern the field' },
+                                { term: 'Advanced Concepts', definition: 'More complex ideas built on basic foundations' },
+                                { term: 'Applications', definition: 'Practical uses of theoretical concepts' }
+                            ],
+                            examples: [
+                                'Advanced implementation example',
+                                'Complex scenario analysis',
+                                'Industry-standard solution'
+                            ],
+                            takeaway: 'Mastering core principles enables you to solve complex problems effectively.',
+                            visual_suggestions: [
+                                'Advanced concept diagram',
+                                'Process flow visualization',
+                                'Complex relationship mapping'
+                            ]
+                        },
+                        videoScript: {
+                            title: 'Core Principles',
+                            scenes: [
+                                { type: 'text', narration: 'Now lets explore the core principles that form the foundation of advanced concepts in this field.' },
+                                { type: 'graph_derivative', narration: 'Well visualize how these principles relate to each other and build upon fundamental concepts.' },
+                                { type: 'real_world_car_speed', narration: 'Finally, well see these principles applied in complex, real-world scenarios.' }
+                            ]
+                        }
+                    },
+                    {
+                        id: 'lesson-2-2',
+                        title: 'Advanced Techniques',
+                        objective: 'Learn advanced techniques in ' + topic,
+                        duration: '30 min',
+                        content: {
+                            explanation: `# Advanced Techniques in ${topic}\n\nTake your skills to the next level with advanced techniques used by professionals. This lesson covers sophisticated methods and best practices.\n\n## Professional Methods\n\n- **Technique 1**: Step-by-step guide to the first advanced method\n- **Technique 2**: Mastering the second professional approach\n- **Technique 3**: Implementing the third sophisticated method\n\n## Industry Standards\n\nLearn the techniques that industry professionals use daily to solve complex problems and deliver high-quality solutions.`,
+                            key_concepts: [
+                                { term: 'Advanced Techniques', definition: 'Sophisticated methods for complex scenarios' },
+                                { term: 'Professional Methods', definition: 'Industry-standard approaches and practices' },
+                                { term: 'Best Practices', definition: 'Recommended techniques for optimal results' }
+                            ],
+                            examples: [
+                                'Professional implementation',
+                                'Complex problem solving',
+                                'Industry case study'
+                            ],
+                            takeaway: 'Advanced techniques enable you to tackle complex challenges like a professional.',
+                            visual_suggestions: [
+                                'Technique comparison chart',
+                                'Advanced process diagram',
+                                'Professional workflow visualization'
+                            ]
+                        },
+                        videoScript: {
+                            title: 'Advanced Techniques',
+                            scenes: [
+                                { type: 'text', narration: 'Lets explore advanced techniques that professionals use to solve complex problems efficiently.' },
+                                { type: 'graph_derivative', narration: 'Well analyze how these advanced techniques build upon and extend the basic principles we learned earlier.' },
+                                { type: 'diagram_process_threads', narration: 'Finally, well visualize the complete workflow showing how all these techniques work together in practice.' }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    };
+    
+    console.log('[Gemini] Mock course data generated successfully');
+    return mockCourse;
+}
+
 function parseRetryDelayMs(err) {
     const msg = String(err?.message || '');
     const secMatch = msg.match(/retry in\s+([\d.]+)s/i);

@@ -14,6 +14,7 @@ router.get('/video/status/:jobId', videoController.getStatus);
 
 // Course Routes
 router.post('/course/create', courseController.createCourse);
+router.post('/course/save', courseController.saveCourse);
 router.get('/course/list', courseController.listCourses);
 router.get('/course/:id', courseController.getCourse);
 

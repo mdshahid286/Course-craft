@@ -7,7 +7,7 @@ import {
   PlusCircle, Search
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createCourse } from '../services/api';
+import { createCourse, saveGeneratedCourse } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
 
@@ -59,23 +59,49 @@ export default function CourseBuilderPage() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState(null);
   const [courseId, setCourseId] = useState(null);
+  const [previewData, setPreviewData] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
   const { currentUser } = useAuth();
 
   const performGeneration = async (q) => {
+    console.log('CourseBuilder Debug - Starting course generation:', q);
     if (!q.trim()) return;
     setIsGenerating(true);
     setCurrentStep(0);
     setDone(false);
     setError(null);
     setCourseId(null);
+    setPreviewData(null);
     try {
-      const { courseId } = await createCourse(q, 'Beginner', currentUser?.uid);
+      console.log('CourseBuilder Debug - Calling createCourse API with save: false');
+      // Step 1: Generate response from Gemini without saving to Firestore yet
+      const { courseId, course } = await createCourse(q, 'Beginner', currentUser?.uid, false);
+      console.log('CourseBuilder Debug - Course generated (not saved):', courseId);
+      
+      setPreviewData(course);
       setCourseId(courseId);
       setCurrentStep(STEPS.length - 1);
       setDone(true);
     } catch (err) {
+      console.error('CourseBuilder Debug - Course generation failed:', err);
       setError(err.message || 'Course generation failed. Please try again.');
       setIsGenerating(false);
+    }
+  };
+
+  const handleSaveCourse = async () => {
+    if (!previewData || !courseId) return;
+    setIsSaving(true);
+    try {
+      console.log('CourseBuilder Debug - Saving course to Firestore');
+      await saveGeneratedCourse(currentUser?.uid, courseId, previewData);
+      console.log('CourseBuilder Debug - Course saved successfully');
+      navigate(`/course/${courseId}`);
+    } catch (err) {
+      console.error('CourseBuilder Debug - Course save failed:', err);
+      setError('Failed to save course. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -308,29 +334,75 @@ export default function CourseBuilderPage() {
                 </div>
               )}
 
-              {/* Done */}
+              {/* Done / Preview State */}
               {!error && done && (
-                <div className="text-center">
+                <div className="text-left">
                   <motion.div
                     initial={{ scale: 0.5, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    className="w-20 h-20 bg-brand-green-lighter rounded-full mx-auto mb-6 flex items-center justify-center border-4 border-brand-green/20"
+                    className="flex items-center gap-3 mb-6"
                   >
-                    <CheckCircle size={36} className="text-brand-green" />
+                    <div className="w-12 h-12 bg-brand-green-lighter rounded-full flex items-center justify-center border-2 border-brand-green/20">
+                      <CheckCircle size={24} className="text-brand-green" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-app-fg">Course Generated!</h2>
+                      <p className="text-sm text-app-muted">Review the content below and save it to your library.</p>
+                    </div>
                   </motion.div>
-                  <h2 className="text-xl font-semibold text-app-fg mb-2">Course Ready!</h2>
-                  <p className="text-sm text-app-muted mb-6 max-w-xs mx-auto">
-                    Your course has been generated successfully and saved to your library.
-                  </p>
+
+                  {/* Course Preview */}
+                  <div className="bg-app-surface2 rounded-2xl p-6 border border-app-border mb-8 max-h-[400px] overflow-y-auto">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-bold text-app-fg">{previewData?.title}</h3>
+                      <span className="text-xs font-medium px-2 py-1 bg-brand-green/10 text-brand-green rounded-md border border-brand-green/20 uppercase">
+                        {previewData?.difficulty}
+                      </span>
+                    </div>
+                    <p className="text-sm text-app-muted mb-6 leading-relaxed">
+                      {previewData?.description}
+                    </p>
+
+                    <div className="space-y-4">
+                      {previewData?.modules?.map((mod, idx) => (
+                        <div key={idx} className="bg-white/50 dark:bg-black/20 rounded-xl p-4 border border-app-border/50">
+                          <h4 className="text-sm font-semibold text-app-fg flex items-center gap-2 mb-2">
+                            <BookOpen size={14} className="text-brand-green" />
+                            {mod.title}
+                          </h4>
+                          <div className="space-y-1.5 ml-6">
+                            {mod.lessons?.map((les, lidx) => (
+                              <div key={lidx} className="text-xs text-app-muted flex items-center gap-2">
+                                <div className="w-1 h-1 rounded-full bg-app-border" />
+                                {les.title}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                   <div className="flex flex-col sm:flex-row gap-3">
                     <button
-                      onClick={() => navigate(`/course/${courseId}`)}
-                      className="btn-brand flex-1 justify-center"
+                      onClick={handleSaveCourse}
+                      disabled={isSaving}
+                      className="btn-brand flex-1 justify-center py-3.5"
                     >
-                      Open Course <ArrowRight size={16} />
+                      {isSaving ? (
+                        <>
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full mr-2"
+                          />
+                          Saving to Firestore...
+                        </>
+                      ) : (
+                        <>Save to Library <ArrowRight size={16} /></>
+                      )}
                     </button>
-                    <button onClick={handleReset} className="btn-outline flex-1 justify-center">
+                    <button onClick={handleReset} className="btn-outline flex-1 justify-center py-3.5">
                       <PlusCircle size={16} /> Create Another
                     </button>
                   </div>

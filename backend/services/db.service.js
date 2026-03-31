@@ -1,5 +1,8 @@
 const { db } = require('../config/firebase');
 
+// In-memory storage for development when Firebase is not available
+const devStorage = new Map();
+
 class DbService {
   /**
    * Universal save method. If subCollection is provided, it saves to a nested collection.
@@ -8,8 +11,20 @@ class DbService {
   async save(collection, id, data, subCollection = null, subId = null) {
     try {
       if (!db) {
-        console.warn(`[DB] Firebase not initialized. Save to ${collection}/${id} skipped.`);
-        return data;
+        console.warn(`[DB] Firebase not initialized. Using in-memory storage for ${collection}/${id}`);
+        
+        // In-memory storage for development
+        const key = subCollection && subId ? `${collection}:${id}:${subCollection}:${subId}` : `${collection}:${id}`;
+        const existing = devStorage.get(key) || {};
+        const payload = { 
+          ...existing,
+          ...data, 
+          updatedAt: new Date().toISOString() 
+        };
+        devStorage.set(key, payload);
+        console.log(`[DB] Saved to in-memory storage: ${key}`);
+        console.log(`[DB] Storage now contains:`, Array.from(devStorage.keys()));
+        return payload;
       }
 
       let ref = db.collection(collection).doc(id);
@@ -32,7 +47,13 @@ class DbService {
 
   async get(collection, id, subCollection = null, subId = null) {
     try {
-      if (!db) return null;
+      if (!db) {
+        const key = subCollection && subId ? `${collection}:${id}:${subCollection}:${subId}` : `${collection}:${id}`;
+        const data = devStorage.get(key);
+        console.log(`[DB] Retrieved from in-memory storage: ${key}`, data ? 'found' : 'not found');
+        console.log(`[DB] Available keys in storage:`, Array.from(devStorage.keys()));
+        return data;
+      }
       
       let ref = db.collection(collection).doc(id);
       if (subCollection && subId) {
@@ -49,19 +70,26 @@ class DbService {
 
   async list(collection, id = null, subCollection = null) {
     try {
-      if (!db) return [];
-      
+      if (!db) {
+        // List all items from in-memory storage
+        const prefix = id && subCollection ? `${collection}:${id}:${subCollection}:` : `${collection}:`;
+        const results = [];
+        for (const [key, value] of devStorage.entries()) {
+          if (key.startsWith(prefix)) {
+            results.push({ id: key.split(':').pop(), ...value });
+          }
+        }
+        console.log(`[DB] Listed from in-memory storage: ${collection} (${results.length} items)`);
+        return results;
+      }
+
       let ref = db.collection(collection);
       if (id && subCollection) {
         ref = ref.doc(id).collection(subCollection);
       }
 
       const snapshot = await ref.get();
-      const results = [];
-      snapshot.forEach(doc => {
-        results.push({ id: doc.id, ...doc.data() });
-      });
-      return results;
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (err) {
       console.error(`[DB] List failed:`, err.message);
       return [];

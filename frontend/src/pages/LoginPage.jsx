@@ -27,11 +27,14 @@ export default function LoginPage() {
     setError('');
     if (mode === 'signup' && !name.trim()) return setError('Please enter your full name.');
     setLoading(true);
+    console.log('LoginPage Debug - Attempting login/signup');
     try {
       if (mode === 'signup') await signup(email, password, name);
       else await login(email, password);
+      console.log('LoginPage Debug - Authentication successful, navigating to dashboard');
       navigate('/dashboard');
     } catch (err) {
+      console.log('LoginPage Debug - Authentication error:', err);
       const map = {
         'auth/user-not-found': 'No account found with this email.',
         'auth/wrong-password': 'Incorrect password. Try again.',
@@ -50,10 +53,13 @@ export default function LoginPage() {
   const handleGoogle = async () => {
     setError('');
     setLoading(true);
+    console.log('LoginPage Debug - Attempting Google sign-in');
     try {
       await loginWithGoogle();
+      console.log('LoginPage Debug - Google sign-in successful, navigating to dashboard');
       navigate('/dashboard');
-    } catch {
+    } catch (err) {
+      console.log('LoginPage Debug - Google sign-in error:', err);
       setError('Google sign-in failed. Please try again.');
       setLoading(false);
     }

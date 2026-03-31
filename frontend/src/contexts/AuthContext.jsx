@@ -22,13 +22,37 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('AuthContext Debug - Setting up auth state listener');
+    
+    // Check if we're in development mode with mock Firebase config
+    const isMockConfig = import.meta.env.VITE_FIREBASE_API_KEY?.includes('mock');
+    
+    if (isMockConfig) {
+      console.log('AuthContext Debug - Using mock authentication for development');
+      // For development with mock config, create a mock user
+      const mockUser = {
+        uid: 'dev-user-123',
+        email: 'dev@example.com',
+        displayName: 'Developer',
+        photoURL: null,
+        emailVerified: true
+      };
+      setCurrentUser(mockUser);
+      setLoading(false);
+      return;
+    }
+
     const unsub = onAuthStateChanged(auth, user => {
+      console.log('AuthContext Debug - Auth state changed:', user);
       setCurrentUser(user);
       setLoading(false);
     });
 
     // Safety timeout to prevent white screen if Firebase hangs
-    const timeout = setTimeout(() => setLoading(false), 2000);
+    const timeout = setTimeout(() => {
+      console.log('AuthContext Debug - Safety timeout triggered');
+      setLoading(false);
+    }, 2000);
 
     return () => {
       unsub();
@@ -57,6 +81,21 @@ export function AuthProvider({ children }) {
   };
 
   const loginWithGoogle = async () => {
+    const isMockConfig = import.meta.env.VITE_FIREBASE_API_KEY?.includes('mock');
+    
+    if (isMockConfig) {
+      console.log('AuthContext Debug - Mock Google sign-in for development');
+      const mockUser = {
+        uid: 'dev-user-123',
+        email: 'dev@example.com',
+        displayName: 'Developer',
+        photoURL: null,
+        emailVerified: true
+      };
+      setCurrentUser(mockUser);
+      return { user: mockUser };
+    }
+
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
     try {
@@ -68,6 +107,21 @@ export function AuthProvider({ children }) {
   };
 
   const signup = async (email, password, displayName) => {
+    const isMockConfig = import.meta.env.VITE_FIREBASE_API_KEY?.includes('mock');
+    
+    if (isMockConfig) {
+      console.log('AuthContext Debug - Mock signup for development');
+      const mockUser = {
+        uid: 'dev-user-123',
+        email: email,
+        displayName: displayName,
+        photoURL: null,
+        emailVerified: true
+      };
+      setCurrentUser(mockUser);
+      return { user: mockUser };
+    }
+
     const result = await createUserWithEmailAndPassword(auth, email, password);
     try {
       await saveUserToFirestore(result.user, { displayName });
@@ -78,10 +132,33 @@ export function AuthProvider({ children }) {
   };
 
   const login = (email, password) => {
+    const isMockConfig = import.meta.env.VITE_FIREBASE_API_KEY?.includes('mock');
+    
+    if (isMockConfig) {
+      console.log('AuthContext Debug - Mock email/password login for development');
+      const mockUser = {
+        uid: 'dev-user-123',
+        email: email,
+        displayName: email.split('@')[0],
+        photoURL: null,
+        emailVerified: true
+      };
+      setCurrentUser(mockUser);
+      return Promise.resolve({ user: mockUser });
+    }
+
     return signInWithEmailAndPassword(auth, email, password);
   };
 
   const logout = () => {
+    const isMockConfig = import.meta.env.VITE_FIREBASE_API_KEY?.includes('mock');
+    
+    if (isMockConfig) {
+      console.log('AuthContext Debug - Mock logout for development');
+      setCurrentUser(null);
+      return Promise.resolve();
+    }
+
     return signOut(auth);
   };
 

@@ -23,9 +23,13 @@ export default function CourseViewPage() {
   useEffect(() => {
     async function fetch() {
       try {
+        console.log('CourseView Debug - Fetching course:', courseId, 'for user:', currentUser?.uid);
         const data = await getCourse(courseId, currentUser?.uid);
+        console.log('CourseView Debug - Course data received:', data);
         setCourse(data);
-      } catch (e) { console.error(e); }
+      } catch (e) { 
+        console.error('CourseView Debug - Error fetching course:', e);
+      }
       finally { setLoading(false); }
     }
     fetch(courseId);

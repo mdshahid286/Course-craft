@@ -41,14 +41,45 @@ async function request(method, path, body) {
  * Creates a full course (outline + lesson content + video scripts + starts Manim renders).
  * @returns { courseId, course }
  */
-export async function createCourse(topic, difficulty = 'Beginner', userId = null) {
-  return request('POST', '/course/create', { topic, difficulty, userId });
+export async function createCourse(topic, difficulty = 'Beginner', userId = null, save = true) {
+  console.log('API Debug - Creating course:', { topic, difficulty, userId, save });
+  try {
+    const result = await request('POST', '/course/create', { topic, difficulty, userId, save });
+    console.log('API Debug - Course created successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('API Debug - Course creation failed:', error);
+    throw error;
+  }
+}
+
+/**
+ * Saves a generated course to Firestore.
+ */
+export async function saveGeneratedCourse(userId, courseId, courseData) {
+  console.log('API Debug - Saving course:', { userId, courseId });
+  try {
+    const result = await request('POST', '/course/save', { userId, courseId, courseData });
+    console.log('API Debug - Course saved successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('API Debug - Course save failed:', error);
+    throw error;
+  }
 }
 
 /** Returns full course object from the server. */
 export async function getCourse(courseId, userId = null) {
+  console.log('API Debug - Getting course:', { courseId, userId });
   const url = userId ? `/course/${courseId}?userId=${userId}` : `/course/${courseId}`;
-  return request('GET', url);
+  try {
+    const result = await request('GET', url);
+    console.log('API Debug - Course retrieved successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('API Debug - Failed to get course:', error);
+    throw error;
+  }
 }
 
 /** Returns list of generated courses. */
@@ -121,18 +152,63 @@ export async function loadCourse(userId, courseId) {
 }
 
 export async function listUserCourses(userId) {
-  if (!userId) return [];
+  console.log('API Debug - listUserCourses called with userId:', userId);
+  if (!userId) {
+    console.log('API Debug - No userId provided, returning empty array');
+    return [];
+  }
   try {
+    console.log('API Debug - Attempting to fetch from Firestore');
     const coursesRef = collection(db, 'users', userId, 'courses');
     const snap = await getDocs(coursesRef);
     const courses = [];
     snap.forEach(doc => {
       courses.push({ id: doc.id, ...doc.data() });
     });
+    console.log('API Debug - Firestore courses fetched:', courses.length);
     return courses;
   } catch (e) {
-    console.error('Failed to list courses from Firestore', e);
-    return [];
+    console.error('API Debug - Failed to list courses from Firestore', e);
+    console.log('API Debug - Returning mock data for development');
+    // Return mock data for development when Firestore fails
+    return [
+      {
+        id: 'mock-course-1',
+        title: 'Introduction to React',
+        topic: 'React',
+        difficulty: 'Beginner',
+        description: 'Learn the basics of React development',
+        progress: 75,
+        createdAt: new Date().toISOString(),
+        modules: [
+          {
+            title: 'Getting Started',
+            lessons: [
+              { title: 'What is React?', completed: true },
+              { title: 'Setting up your environment', completed: true }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'mock-course-2',
+        title: 'Advanced JavaScript',
+        topic: 'JavaScript',
+        difficulty: 'Advanced',
+        description: 'Deep dive into JavaScript concepts',
+        progress: 30,
+        createdAt: new Date().toISOString(),
+        modules: [
+          {
+            title: 'Advanced Concepts',
+            lessons: [
+              { title: 'Closures', completed: true },
+              { title: 'Promises', completed: false }
+            ]
+          }
+        ]
+      }
+    ];
   }
 }
 
